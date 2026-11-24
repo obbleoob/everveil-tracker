@@ -3,169 +3,270 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Everveil Boss Tracker</title>
+<title>Seraphile · Everveil</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #f1ebe0; --paper2: #e8dfd0; --ink: #2a2420; --muted: #7b7064; --rule: #d6c9b4;
-    --bronze: #8a6433; --teal: #2f5d66; --teal2: #24484f;
-    --up: #2e7a4e; --soon: #a8730f; --near: #b0522c; --wd: #3d6a8a;
-    --fell: "IM Fell English", Georgia, serif;
+    --bg: #fbf5e8; --card: #fffbf3; --ink: #4a3a26; --ink-dark: #3d2f1c; --soft: #7a6a52; --faint: #8a7a62;
+    --gold: #a8730f; --gold-line: #e3c785; --gold-btn: #d9b866; --gold-text: #7a5a1c; --rule: #f0e3c6;
+    --rose: #9a3c49; --rose-dark: #7a2b37; --blush: #fbe7ea; --wd: #5c7a8e;
+    --serif: "Cormorant Garamond", Georgia, serif; --sans: Nunito, system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--paper); color: var(--ink);
-         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .wrap { max-width: 900px; margin: 0 auto; padding: 40px 22px 56px; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+  a { color: var(--rose); } a:hover { color: var(--rose-dark); }
+  :focus-visible { outline: 2px solid var(--rose); outline-offset: 2px; }
+  .page { position: relative; overflow: hidden; min-height: 100vh; }
+  .deco { position: absolute; pointer-events: none; }
+  .wrap { position: relative; width: min(960px, 100% - 40px); margin: 0 auto; padding: 60px 0 64px; display: flex; flex-direction: column; gap: 30px; }
 
-  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
-           padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
-  .kicker { margin: 0; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--bronze); font-weight: 600; }
-  h1 { margin: 2px 0 0; font-family: var(--fell); font-weight: 400; font-size: 2.6rem; line-height: 1; }
-  .status { font-size: .85rem; color: var(--muted); display: flex; align-items: center; gap: 7px; }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--up); }
-  .dot.bad { background: var(--near); }
-  .note { margin: 12px 0 0; font-family: var(--fell); font-style: italic; font-size: 1.08rem; color: #5c5248; }
+  /* Header */
+  header { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .kicker { margin: 0; font-size: 13px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: #9a7a3c; }
+  h1 { margin: 6px 0 0; font: italic 600 76px/0.95 var(--serif); color: var(--ink-dark); }
+  .tagline { margin: 12px 0 0; font-size: 17px; color: var(--soft); }
+  .pearls { margin-top: 14px; width: 100%; max-width: 760px; }
+  .pearls svg { width: 100%; height: auto; display: block; }
+  .status { margin: 6px 0 0; font-size: 14px; color: var(--faint); }
+  .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #7d9b62; margin-right: 8px; vertical-align: 1px; }
+  .status.bad .dot { background: var(--rose); }
 
-  h2 { font-family: var(--fell); font-weight: 400; font-size: 1.5rem; margin: 34px 0 6px; }
-  .sched { border-top: 1px solid var(--ink); }
-  .row, .heads { display: grid; grid-template-columns: 110px 1fr 170px 80px 92px; gap: 14px; align-items: center; }
-  .heads { padding: 8px 6px; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule); }
-  .row { padding: 12px 6px; border-bottom: 1px solid var(--rule); }
-  .row.s-up { background: rgba(46,122,78,.07); }
-  .when { font-size: 1.55rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
-  .s-up .when, .s-close .when { color: var(--up); }
-  .s-soon .when { color: var(--soon); }
-  .s-near .when { color: var(--near); }
-  .when small { display: block; font-size: .72rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
-  .sid { font-family: ui-monospace, Consolas, monospace; font-weight: 700; font-size: .95rem; }
-  .meta { font-size: .8rem; color: var(--muted); margin-top: 2px; }
-  .meta .wd { color: var(--wd); }
-  .at { font-size: .85rem; font-variant-numeric: tabular-nums; line-height: 1.45; }
-  .at span { color: var(--muted); font-size: .78rem; display: block; }
-  .players { font-size: .88rem; font-variant-numeric: tabular-nums; color: #4a423a; }
+  /* Next spawn */
+  .hero-wrap { position: relative; padding: 0 70px; }
+  .wing { position: absolute; top: 40px; width: 250px; height: 172px; }
+  .wing.l { left: -40px; } .wing.r { right: -40px; transform: scaleX(-1); }
+  .hero { position: relative; overflow: hidden; background: var(--card); border: 1.5px solid var(--gold-line); border-radius: 28px;
+          padding: 34px 40px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 36px;
+          box-shadow: 0 18px 40px rgba(170, 130, 50, .13); }
+  .halo { position: absolute; left: 150px; top: 50%; width: 460px; height: 460px; transform: translateY(-50%); opacity: .13; }
+  .hero > div { position: relative; }
+  .hero .lead { display: flex; flex-direction: column; gap: 8px; }
+  .eyebrow { margin: 0; font: italic 500 26px/1.2 var(--serif); color: var(--soft); }
+  .big { font-size: 104px; font-weight: 800; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--gold); }
+  .big.up { color: var(--rose); font-size: 80px; }
+  .hero .server { margin: 4px 0 0; font-size: 16px; color: var(--soft); }
+  .mono { font-family: ui-monospace, Consolas, monospace; font-weight: 700; color: var(--ink); }
+  .hero .row-actions { display: flex; align-items: center; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+  .hero .hint { font-size: 14px; color: var(--faint); max-width: 220px; line-height: 1.4; }
+  .wdnote { margin: 4px 0 0; font-size: 14px; color: var(--wd); }
+  .btn-join { min-height: 50px; display: inline-flex; align-items: center; padding: 0 34px; border-radius: 999px; background: var(--rose);
+              color: #fff7ea; font-weight: 800; font-size: 17px; text-decoration: none; }
+  .btn-join:hover { background: var(--rose-dark); color: #fff7ea; }
+  .btn-join[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+  .btn-line { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border: 1.5px solid var(--gold-btn);
+              border-radius: 999px; font-weight: 700; font-size: 14px; color: var(--gold-text); text-decoration: none; background: transparent; cursor: pointer; font-family: var(--sans); }
+  .btn-line:hover { background: #f7ecd2; color: var(--gold-text); }
+  .soon-col { border-left: 1.5px solid #eddcb3; padding-left: 32px; display: flex; flex-direction: column; gap: 4px; }
+  .soon-col h2 { margin: 0 0 6px; font: italic 500 22px/1.2 var(--serif); color: var(--soft); }
+  .soon-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1e5c9; }
+  .soon-item .info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .soon-item .t { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .soon-item .who { font-size: 13px; color: var(--faint); }
+  .ico { width: 28px; height: 28px; flex: none; }
 
-  .btn { font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; text-decoration: none; text-align: center;
-         border-radius: 4px; padding: 7px 10px; border: 1px solid var(--teal); color: var(--teal); background: transparent; }
-  .btn:hover { background: var(--teal); color: var(--paper); }
-  .btn-join::after { content: " \2192"; }
-  .btn-ghost { border-color: var(--rule); color: var(--ink); }
-  .btn-ghost:hover { background: var(--paper2); color: var(--ink); }
-  .btn-main { background: var(--teal); color: var(--paper); }
-  .btn-main:hover { background: var(--teal2); }
-  .empty { color: var(--muted); font-style: italic; padding: 14px 6px; }
-  .closed { color: var(--muted); font-size: .82rem; margin-top: 10px; }
+  /* Every server */
+  .list-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-top: 10px; }
+  .list-head h2 { margin: 0; font: 600 38px/1 var(--serif); color: var(--ink-dark); }
+  .legend { margin: 8px 0 0; font-size: 13px; color: var(--faint); }
+  .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: #f3e8d2; }
+  .tabs button { min-height: 40px; padding: 0 18px; border: 0; border-radius: 999px; font: 700 14px var(--sans); cursor: pointer; background: transparent; color: #6e5e48; }
+  .tabs button[aria-pressed="true"] { background: var(--ink); color: #fffaf0; }
+  .rows { display: flex; flex-direction: column; }
+  .srow { display: grid; grid-template-columns: 34px 120px minmax(0, 1fr) 110px 170px 92px; gap: 16px; align-items: center;
+          padding: 12px 18px; border-radius: 18px; border-bottom: 1px solid var(--rule); }
+  .srow.bloom { background: var(--blush); }
+  .srow .ico { width: 30px; height: 30px; }
+  .srow .t { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .srow .sub { display: block; font-size: 12px; color: var(--faint); font-weight: 400; }
+  .srow .sid { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .srow .sid .mono { font-size: 15px; }
+  .srow .note { font-size: 13px; color: var(--wd); }
+  .srow .meta { font-size: 14px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .c-bloom { color: var(--rose); } .c-bud { color: var(--gold); } .c-closed { color: var(--ink); }
+  .linkbtn { background: none; border: 0; padding: 0; color: var(--rose); font: 700 13px var(--sans); text-decoration: underline; cursor: pointer; text-align: left; }
+  .empty { margin: 0; padding: 28px 18px; font: italic 500 22px var(--serif); color: var(--faint); }
+  .closed-list { margin: 0; font-size: 13px; color: var(--faint); }
 
-  details.panel { border-top: 1px solid var(--rule); margin-top: 0; }
-  details.panel:last-of-type { border-bottom: 1px solid var(--rule); }
-  details.panel > summary { cursor: pointer; padding: 14px 2px; list-style: none; font-family: var(--fell); font-size: 1.2rem; }
-  details.panel > summary::-webkit-details-marker { display: none; }
-  details.panel > summary::after { content: "+"; float: right; color: var(--muted); font-family: system-ui, sans-serif; }
-  details.panel[open] > summary::after { content: "\2212"; }
-  .gap { height: 34px; }
-  .panel-body { padding: 0 2px 18px; }
-  .hint { color: var(--muted); font-size: .88rem; margin: 0 0 12px; line-height: 1.55; }
-  .hint b { color: var(--ink); }
-  form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; align-items: end; }
-  label { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; color: var(--muted); }
-  input, select { font: inherit; color: var(--ink); background: #fbf8f2; border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; }
-  input:focus, select:focus { outline: none; border-color: var(--teal); }
-  .msg { grid-column: 1 / -1; margin: 0; font-size: .85rem; color: var(--muted); min-height: 1.2em; }
-  .ok { color: var(--up); } .err { color: var(--near); }
-  .sub-title { font-size: .9rem; font-weight: 600; margin: 18px 0 8px; }
+  /* Footer + forms */
+  footer { display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 10px; text-align: center; }
+  .footlinks { margin: 0; font-size: 13px; font-weight: 700; color: var(--rose); }
+  .footlinks button { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+  .footlinks button:hover { text-decoration: underline; }
+  .panel { width: 100%; text-align: left; background: var(--card); border: 1.5px solid var(--gold-line); border-radius: 22px; padding: 24px 28px; }
+  .panel[hidden] { display: none; }
+  .panel h3 { margin: 0 0 6px; font: 600 28px/1.1 var(--serif); color: var(--ink-dark); }
+  .panel p.hint { margin: 0 0 16px; font-size: 14px; color: var(--soft); line-height: 1.5; }
+  .panel form { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: end; }
+  .panel label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: var(--soft); }
+  .panel input, .panel select { font: 400 16px var(--sans); color: var(--ink); background: #fffdf8; border: 1.5px solid #e6d3a6; border-radius: 12px; padding: 10px 12px; min-height: 44px; }
+  .panel input:focus, .panel select:focus { outline: none; border-color: var(--rose); }
+  .panel button[type="submit"] { min-height: 44px; border: 0; border-radius: 999px; background: var(--rose); color: #fff7ea; font: 800 15px var(--sans); padding: 0 24px; cursor: pointer; }
+  .panel button[type="submit"]:hover { background: var(--rose-dark); }
+  .msg { grid-column: 1 / -1; margin: 0; min-height: 20px; font-size: 14px; color: var(--soft); }
+  .msg.ok { color: #4f6b3a; font-weight: 700; } .msg.err { color: var(--rose); font-weight: 700; }
 
-  footer { margin-top: 30px; color: var(--muted); font-size: .82rem; line-height: 1.65; }
-  footer b { color: var(--ink); }
-
-  @media (max-width: 680px) {
-    .heads { display: none; }
-    .row { grid-template-columns: 1fr auto; row-gap: 6px; }
-    .row .at, .row .players { grid-column: 1; }
-    .row .btn { grid-column: 2; grid-row: 1 / span 2; }
+  @media (max-width: 900px) {
+    h1 { font-size: 56px; }
+    .hero-wrap { padding: 0; }
+    .wing, .halo { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 28px 24px; gap: 24px; }
+    .soon-col { border-left: 0; padding-left: 0; border-top: 1.5px solid #eddcb3; padding-top: 16px; }
+    .big { font-size: 76px; }
+    .srow { grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-areas: "i t j" "i s j"; row-gap: 4px; padding: 12px; }
+    .srow > .ico { grid-area: i; } .srow > .when { grid-area: t; } .srow > .sid { grid-area: s; } .srow > .join { grid-area: j; }
+    .srow > .meta { display: none; }
+    .tabs { width: 100%; } .tabs button { flex: 1; padding: 0 8px; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
+<div class="page">
+  <svg class="deco" aria-hidden="true" viewBox="0 0 420 260" style="left: -20px; top: -10px; width: 420px; height: 260px">
+    <path d="M0 40 C90 60 170 70 260 120 M120 66 C150 30 190 20 220 14 M200 96 C220 140 250 160 290 170 M300 140 C330 140 360 150 390 170" fill="none" stroke="#9a6b52" stroke-width="5" stroke-linecap="round"/>
+    <g fill="#f4bcc5"><circle cx="222" cy="10" r="9"/><circle cx="235" cy="20" r="9"/><circle cx="228" cy="34" r="9"/><circle cx="212" cy="32" r="9"/><circle cx="208" cy="18" r="9"/></g><circle cx="221" cy="23" r="5" fill="#d46a7e"/>
+    <g fill="#f2aeb9"><circle cx="292" cy="158" r="10"/><circle cx="307" cy="168" r="10"/><circle cx="301" cy="184" r="10"/><circle cx="283" cy="183" r="10"/><circle cx="278" cy="167" r="10"/></g><circle cx="292" cy="172" r="5.5" fill="#d46a7e"/>
+    <g fill="#f4bcc5"><circle cx="392" cy="160" r="8"/><circle cx="403" cy="169" r="8"/><circle cx="398" cy="182" r="8"/><circle cx="384" cy="181" r="8"/><circle cx="380" cy="168" r="8"/></g><circle cx="391" cy="172" r="4.5" fill="#d46a7e"/>
+    <path d="M262 122 C272 108 286 106 294 112 C286 122 274 126 262 122 Z" fill="#f4bcc5"/>
+    <path d="M140 60 C146 46 158 42 166 46 C160 58 150 62 140 60 Z" fill="#f2aeb9"/>
+  </svg>
+  <svg class="deco" aria-hidden="true" viewBox="0 0 40 40" style="right: 8%; top: 140px; width: 18px; height: 18px; transform: rotate(30deg)"><ellipse cx="20" cy="20" rx="9" ry="16" fill="#f4c3ca"/></svg>
+  <svg class="deco" aria-hidden="true" viewBox="0 0 40 40" style="right: 4%; top: 520px; width: 14px; height: 14px; transform: rotate(-40deg)"><ellipse cx="20" cy="20" rx="9" ry="16" fill="#f4c3ca"/></svg>
+  <svg class="deco" aria-hidden="true" viewBox="0 0 40 40" style="left: 5%; top: 760px; width: 16px; height: 16px; transform: rotate(70deg)"><ellipse cx="20" cy="20" rx="9" ry="16" fill="#f4c3ca"/></svg>
+  <svg class="deco" aria-hidden="true" viewBox="0 0 40 40" style="right: 6%; top: 1180px; width: 16px; height: 16px; transform: rotate(10deg)"><ellipse cx="20" cy="20" rx="9" ry="16" fill="#f4c3ca"/></svg>
+
+  <div class="wrap">
+    <header>
       <p class="kicker">Everveil</p>
-      <h1>Seraphiel Timers</h1>
-    </div>
-    <div class="status"><span class="dot" id="dot"></span><span id="status">Loading…</span></div>
-  </header>
-  <p class="note">Times are estimates, so get there a minute or two early.</p>
+      <h1>Seraphile</h1>
+      <p class="tagline">Make sure to join early</p>
+      <div class="pearls" id="pearls" aria-hidden="true"></div>
+      <p class="status" id="status" role="status"><span class="dot"></span><span id="statusText">Loading the server list…</span></p>
+    </header>
 
-  <h2>Schedule</h2>
-  <div class="sched">
-    <div class="heads"><span>Spawns in</span><span>Server</span><span>At server uptime</span><span>Players</span><span></span></div>
-    <div id="cards"></div>
-    <div id="unknown"></div>
+    <div class="hero-wrap">
+      <svg class="wing l" aria-hidden="true" viewBox="0 0 160 110"><path d="M156 18 C112 -2 46 6 6 44 C26 44 36 50 40 58 C24 60 16 68 12 80 C30 78 42 82 48 92 C38 96 34 102 32 108 C70 104 112 98 138 74 C152 60 158 40 156 18 Z" fill="#fff6e2" stroke="#e0bf73" stroke-width="2" stroke-linejoin="round"/><path d="M150 28 C114 22 74 32 44 52 M146 46 C112 46 80 60 56 76 M138 64 C110 70 86 80 66 94" fill="none" stroke="#ecd49c" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <svg class="wing r" aria-hidden="true" viewBox="0 0 160 110"><path d="M156 18 C112 -2 46 6 6 44 C26 44 36 50 40 58 C24 60 16 68 12 80 C30 78 42 82 48 92 C38 96 34 102 32 108 C70 104 112 98 138 74 C152 60 158 40 156 18 Z" fill="#fff6e2" stroke="#e0bf73" stroke-width="2" stroke-linejoin="round"/><path d="M150 28 C114 22 74 32 44 52 M146 46 C112 46 80 60 56 76 M138 64 C110 70 86 80 66 94" fill="none" stroke="#ecd49c" stroke-width="1.6" stroke-linecap="round"/></svg>
+
+      <section class="hero" aria-labelledby="nextLabel">
+        <svg class="halo" aria-hidden="true" viewBox="0 0 100 100"><polygon fill="#c99a3e" points="50,2 55.9,20.6 68.4,5.7 66.7,25.1 83.9,16.1 74.9,33.3 94.3,31.6 79.4,44.1 98,50 79.4,55.9 94.3,68.4 74.9,66.7 83.9,83.9 66.7,74.9 68.4,94.3 55.9,79.4 50,98 44.1,79.4 31.6,94.3 33.3,74.9 16.1,83.9 25.1,66.7 5.7,68.4 20.6,55.9 2,50 20.6,44.1 5.7,31.6 25.1,33.3 16.1,16.1 33.3,25.1 31.6,5.7 44.1,20.6"/></svg>
+        <div class="lead">
+          <p class="eyebrow" id="nextLabel">Next to descend</p>
+          <span class="big" id="heroWhen">–:––</span>
+          <p class="server" id="heroServer">Loading…</p>
+          <p class="wdnote" id="heroWd" hidden></p>
+          <div class="row-actions">
+            <a class="btn-join" id="heroJoin" href="#" aria-disabled="true">Join server</a>
+            <span class="hint">Be there a minute or two early. Times are estimates.</span>
+          </div>
+        </div>
+        <div class="soon-col">
+          <h2>Also soon</h2>
+          <div id="soonList"></div>
+        </div>
+      </section>
+    </div>
+
+    <section aria-labelledby="everyTitle" style="display: flex; flex-direction: column; gap: 14px">
+      <div class="list-head">
+        <div>
+          <h2 id="everyTitle">Every server</h2>
+          <p class="legend">In bloom: up now · Budding: within 10 minutes · Closed bud: later</p>
+        </div>
+        <div class="tabs" role="group" aria-label="Filter servers">
+          <button type="button" data-f="all" aria-pressed="true">All</button>
+          <button type="button" data-f="soon" aria-pressed="false">Soonest</button>
+          <button type="button" data-f="unknown" aria-pressed="false">Needs a reading</button>
+        </div>
+      </div>
+      <div class="rows" id="rows"></div>
+      <p class="closed-list" id="closed"></p>
+    </section>
+
+    <footer>
+      <p class="footlinks">
+        <button type="button" data-open="addPanel">Add a reading</button> ·
+        <button type="button" data-open="reportPanel">Report a spawn</button> ·
+        <button type="button" data-open="keyPanel">Write key</button>
+      </p>
+
+      <div class="panel" id="addPanel" hidden>
+        <h3>Add a reading</h3>
+        <p class="hint">Copy these from the game. Seraphiel's time left is the most useful: it makes the timer exact. Leave "Your computer time" blank if you're typing it in right away.</p>
+        <form id="logForm" autocomplete="off">
+          <label>Server ID <input id="serverId" list="shortIds" required placeholder="7e64-4b45"></label>
+          <label>Server uptime <input id="uptime" required placeholder="3d 21:31:14"></label>
+          <label>Seraphiel time left <input id="seraLeft" placeholder="59:23"></label>
+          <label>Your computer time <input id="readAt" placeholder="Blank = now"></label>
+          <button type="submit">Save reading</button>
+          <p class="msg" id="logMsg" role="status"></p>
+        </form>
+        <datalist id="shortIds"></datalist>
+      </div>
+
+      <div class="panel" id="reportPanel" hidden>
+        <h3>Report a spawn</h3>
+        <p class="hint">Saw Seraphiel appear? Pick the server and the uptime she spawned at, or leave it blank for "just now".</p>
+        <form id="reportForm" autocomplete="off">
+          <label>Server <select id="reportServer"></select></label>
+          <label>Spawned at uptime <input id="reportUptime" placeholder="Blank = just now"></label>
+          <button type="submit">Report spawn</button>
+          <p class="msg" id="reportMsg" role="status"></p>
+        </form>
+      </div>
+
+      <div class="panel" id="keyPanel" hidden>
+        <h3>Write key</h3>
+        <p class="hint">Needed once per browser to add readings or report spawns. Viewing works without it.</p>
+        <form id="keyForm" autocomplete="off">
+          <label>Write key <input id="writeKey" type="password"></label>
+          <button type="submit">Save key</button>
+          <p class="msg" id="keyMsg" role="status"></p>
+        </form>
+      </div>
+    </footer>
   </div>
-  <div class="closed" id="closed"></div>
-
-  <div class="gap"></div>
-
-  <details class="panel" id="updatePanel">
-    <summary>Add a reading or report a spawn</summary>
-    <div class="panel-body">
-      <p class="hint">Copy these from the game. <b>Seraphiel time left</b> is the most useful: it makes the timer exact.
-        Leave <b>Your computer time</b> blank if you're typing it in right away.</p>
-      <form id="logForm" autocomplete="off">
-        <label>Server ID <input id="serverId" list="shortIds" required placeholder="7e64-4b45"></label>
-        <label>Server uptime <input id="uptime" required placeholder="3d 21:31:14"></label>
-        <label>Seraphiel time left <input id="seraLeft" placeholder="59:23"></label>
-        <label>Your computer time <input id="readAt" placeholder="blank = now"></label>
-        <button class="btn btn-main" type="submit">Save reading</button>
-        <p class="msg" id="logMsg"></p>
-      </form>
-      <datalist id="shortIds"></datalist>
-
-      <div class="sub-title">Saw Seraphiel spawn?</div>
-      <form id="reportForm" autocomplete="off">
-        <label>Server <select id="reportServer"></select></label>
-        <label>Spawned at uptime <input id="reportUptime" placeholder="blank = just now"></label>
-        <button class="btn btn-main" type="submit">Report spawn</button>
-        <p class="msg" id="reportMsg"></p>
-      </form>
-    </div>
-  </details>
-
-  <details class="panel" id="keyBox">
-    <summary>Write key</summary>
-    <div class="panel-body">
-      <p class="hint">Needed once per browser to add readings or report spawns. Viewing works without it.</p>
-      <form id="keyForm" autocomplete="off">
-        <label>Write key <input id="writeKey" type="password"></label>
-        <button class="btn btn-main" type="submit">Save key</button>
-        <p class="msg" id="keyMsg"></p>
-      </form>
-    </div>
-  </details>
-
-  <footer id="footer"></footer>
 </div>
 
 <script>
 // ===== Settings =====
 const API = 'https://everveil-tracker.yobbledoob.workers.dev';
 const PLACE_ID = '88206180860518';
-const SERA_EVERY = 3600;   // Seraphiel respawn timer, starts when it dies
+const SERA_EVERY = 3600;   // Seraphiel respawn timer, starts when she's defeated
 const FIRST_SPAWN = 3600;  // first spawn at 1:00:00 uptime
-// How long Seraphiel stays alive before it's killed, by player count (seconds).
+// How long Seraphiel stays alive before she's defeated, by player count (seconds).
 const SIZES = [
   { name: 'Large',  minPlayers: 8, killMin: 10, killLikely: 20, killMax: 30 },
   { name: 'Medium', minPlayers: 5, killMin: 20, killLikely: 40, killMax: 60 },
   { name: 'Small',  minPlayers: 0, killMin: 20, killLikely: 45, killMax: 60 },
 ];
-const UP_FOR = 180;          // show "Up now" for 3 min after the expected spawn
+const UP_FOR = 180;          // "in bloom" for 3 min after the expected spawn
+const SOON = 600;            // "budding" = within 10 minutes
 const WD_EVERY = 7200, WD_CHANCE = 25, WD_SHOW_BEFORE = 900;
 const REFRESH_MS = 30000;
+
+// ===== Icons =====
+const ICON = {
+  bloom: '<svg class="ico" aria-hidden="true" viewBox="0 0 40 40"><g fill="#f2aeb9"><circle cx="20" cy="9" r="7.5"/><circle cx="30.5" cy="16.6" r="7.5"/><circle cx="26.5" cy="29" r="7.5"/><circle cx="13.5" cy="29" r="7.5"/><circle cx="9.5" cy="16.6" r="7.5"/></g><circle cx="20" cy="20" r="4.5" fill="#d46a7e"/></svg>',
+  bud: '<svg class="ico" aria-hidden="true" viewBox="0 0 40 40"><path d="M20 5 C30 13 30 24 20 30 C10 24 10 13 20 5 Z" fill="#f4bcc5" stroke="#d98a99" stroke-width="1.5"/><path d="M20 30 C16 32 13 31 11 28 M20 30 C24 32 27 31 29 28 M20 30 L20 37" stroke="#8aa36b" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>',
+  closed: '<svg class="ico" aria-hidden="true" viewBox="0 0 40 40"><ellipse cx="20" cy="19" rx="5.5" ry="9.5" fill="#f1e4d2" stroke="#cdb89a" stroke-width="1.5"/><path d="M20 28 C16 30 14 29 13 26 M20 28 C24 30 26 29 27 26 M20 28 L20 37" stroke="#a9b796" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>',
+  unknown: '<svg class="ico" aria-hidden="true" viewBox="0 0 40 40"><ellipse cx="20" cy="19" rx="5.5" ry="9.5" fill="none" stroke="#cdb89a" stroke-width="1.5" stroke-dasharray="3 3"/><path d="M20 28 L20 37" stroke="#cdb89a" stroke-width="2.5" stroke-linecap="round"/></svg>',
+};
+
+// Draped pearl strands under the title
+(function pearls() {
+  const big = [], small = [];
+  for (let i = 0; i <= 46; i++) { const t = i / 46; big.push(`<circle cx="${(760 * t).toFixed(1)}" cy="${(8 + 184 * t * (1 - t)).toFixed(1)}" r="5"/>`); }
+  for (let i = 0; i <= 30; i++) { const t = i / 30; small.push(`<circle cx="${(120 + 520 * t).toFixed(1)}" cy="${(30 + 160 * t * (1 - t)).toFixed(1)}" r="3.6"/>`); }
+  document.getElementById('pearls').innerHTML =
+    `<svg viewBox="-6 0 772 90"><g fill="#fbf1da" stroke="#d6b56a" stroke-width="1.2">${big.join('')}</g><g fill="#fbf1da" stroke="#d6b56a" stroke-width="1">${small.join('')}</g></svg>`;
+})();
 
 // ===== State =====
 let data = null;      // last /state response
 let offset = 0;       // helper clock minus this computer's clock
+let filter = 'all';
 const srvNow = () => Date.now() + offset;
 const keyStore = {
   get() { try { return localStorage.getItem('everveil-write-key') || ''; } catch (e) { return ''; } },
@@ -226,8 +327,8 @@ function timer(sec) {
   const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
   return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }
-function plusMinus(widthSec) {
-  if (widthSec <= 0) return 'exact';
+function plusMinus(widthSec, long) {
+  if (widthSec <= 0) return long ? 'exact time' : 'exact';
   const half = widthSec / 2;
   return half < 90 ? `±${Math.round(half)}s` : `±${Math.round(half / 60)} min`;
 }
@@ -237,7 +338,7 @@ const joinLink = srv => `roblox://experiences/start?placeId=${PLACE_ID}&gameInst
 
 // ===== Seraphiel prediction =====
 // Start from the last known spawn (a reading, a report, or 1:00:00 by default).
-// Each later spawn is 1 hour + however long the previous one took to kill.
+// Each later spawn is 1 hour + however long the previous one took to defeat.
 function seraWindow(srv, up) {
   const z = sizeOf(srv);
   const known = srv.anchor != null ? srv.anchor : FIRST_SPAWN;
@@ -252,21 +353,14 @@ function seraphiel(srv, now) {
   const up = uptimeOf(srv, now);
   const w = seraWindow(srv, up);
   const until = w.best - up;
-  let state;
-  if (up >= w.lo) state = 'up';
-  else if (until <= 120) state = 'close';
-  else if (until <= 300) state = 'soon';
-  else if (until <= 600) state = 'near';
-  else state = 'far';
-  return { state, until, since: up - w.best, at: w.best, pm: plusMinus(w.hi - w.lo), sortKey: w.lo - up,
-           // kept for older checks: a short description of the window
-           sub: `${clock(w.best)} (${plusMinus(w.hi - w.lo)})`, label: state };
+  const stage = up >= w.lo ? 'bloom' : until <= SOON ? 'bud' : 'closed';
+  return { stage, until, since: up - w.best, at: w.best, width: w.hi - w.lo, sortKey: w.lo - up };
 }
 function whiteDeath(srv, now) {
   const up = uptimeOf(srv, now);
   const since = up % WD_EVERY, until = WD_EVERY - since;
-  if (up > WD_EVERY && since <= UP_FOR) return `White Death roll just happened (${WD_CHANCE}% chance)`;
-  if (until <= WD_SHOW_BEFORE) return `White Death roll in ${timer(until)} (${WD_CHANCE}% chance)`;
+  if (up > WD_EVERY && since <= UP_FOR) return `White Death may have just appeared (${WD_CHANCE}% chance)`;
+  if (until <= WD_SHOW_BEFORE) return `White Death may appear in ${timer(until)} (${WD_CHANCE}%)`;
   return '';
 }
 
@@ -282,8 +376,8 @@ async function refresh() {
     fillPickers();
     render();
   } catch (e) {
-    $('dot').className = 'dot bad';
-    $('status').textContent = `Can't reach the helper (${e.message})`;
+    $('status').className = 'status bad';
+    $('statusText').textContent = `Can't reach the server list right now. Retrying shortly.`;
   }
 }
 async function post(path, body) {
@@ -305,10 +399,23 @@ function fillPickers() {
   const known = open.filter(s => s.start);
   sel.innerHTML = known.length
     ? known.map(s => `<option value="${esc(s.short)}">${esc(s.short)}</option>`).join('')
-    : '<option value="">(no servers with a known uptime)</option>';
+    : '<option value="">No servers with a known uptime yet</option>';
   if (known.some(s => s.short === keep)) sel.value = keep;
 }
 const say = (el, text, cls = '') => { el.className = 'msg ' + cls; el.textContent = text; };
+
+// ===== Footer panels =====
+function openPanel(id, focusId) {
+  for (const p of ['addPanel', 'reportPanel', 'keyPanel']) $(p).hidden = p !== id;
+  $(id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const f = focusId ? $(focusId) : $(id).querySelector('input, select');
+  if (f) setTimeout(() => f.focus({ preventScroll: true }), 250);
+}
+document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => {
+  const id = b.dataset.open;
+  if (!$(id).hidden) { $(id).hidden = true; return; }
+  openPanel(id);
+}));
 
 // ===== Forms =====
 $('logForm').addEventListener('submit', async e => {
@@ -356,67 +463,104 @@ $('keyForm').addEventListener('submit', e => {
   say($('keyMsg'), 'Key saved in this browser.', 'ok');
 });
 $('writeKey').value = keyStore.get();
-if (!keyStore.get()) $('keyBox').open = true;
 
-// "Add reading" buttons on servers that still need one
-$('unknown').addEventListener('click', e => {
+// ===== Filters =====
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  filter = b.dataset.f;
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  render();
+}));
+$('rows').addEventListener('click', e => {
   const b = e.target.closest('button[data-log]');
   if (!b) return;
-  $('updatePanel').open = true;
   $('serverId').value = b.dataset.log;
-  $('uptime').focus();
+  openPanel('addPanel', 'uptime');
 });
 
 // ===== Render =====
-function card(s, now) {
-  const r = seraphiel(s, now);
+function whenText(r) {
+  return r.stage === 'bloom' ? 'Up now' : timer(r.until);
+}
+function subText(r) {
+  return r.stage === 'bloom' ? `descended ${timer(Math.max(0, r.since))} ago` : plusMinus(r.width);
+}
+function rowKnown(s, r, now) {
   const wd = whiteDeath(s, now);
-  const when = r.state === 'up'
-    ? `Up now<small>spawned ${timer(Math.max(0, r.since))} ago</small>`
-    : `${timer(r.until)}<small>${r.pm}</small>`;
-  return `<div class="row s-${r.state}">
-    <div class="when">${when}</div>
-    <div><div class="sid">${esc(s.short)}</div>${wd ? `<div class="meta"><span class="wd">${wd}</span></div>` : ''}</div>
-    <div class="at">${clock(r.at)}<span>now ${clock(uptimeOf(s, now))}</span></div>
-    <div class="players">${s.playing}/${s.max}</div>
-    <a class="btn btn-join" href="${joinLink(s)}">Join</a>
+  return `<div class="srow ${r.stage}">
+    ${ICON[r.stage]}
+    <div class="when"><span class="t c-${r.stage}">${whenText(r)}</span><span class="sub">${subText(r)}</span></div>
+    <div class="sid"><span class="mono">${esc(s.short)}</span>${wd ? `<span class="note">${wd}</span>` : ''}</div>
+    <span class="meta">${s.playing}/${s.max} players</span>
+    <span class="meta">at ${clock(r.at)}</span>
+    <a class="btn-line join" href="${joinLink(s)}">Join</a>
+  </div>`;
+}
+function rowUnknown(s) {
+  return `<div class="srow">
+    ${ICON.unknown}
+    <div class="when"><span class="t c-closed">?</span><span class="sub">no timer yet</span></div>
+    <div class="sid"><span class="mono">${esc(s.short)}</span><button type="button" class="linkbtn" data-log="${esc(s.short)}">Add a reading</button></div>
+    <span class="meta">${s.playing}/${s.max} players</span>
+    <span class="meta">uptime unknown</span>
+    <a class="btn-line join" href="${joinLink(s)}">Join</a>
   </div>`;
 }
 
 function render() {
   if (!data) return;
   const now = srvNow();
-  const ago = data.lastPoll ? (now - data.lastPoll) / 1000 : null;
+  const ago = data.lastPoll ? Math.round((now - data.lastPoll) / 1000) : null;
   const open = openServers();
   const bad = !!data.lastError || ago == null || ago > 180;
-  $('dot').className = bad ? 'dot bad' : 'dot';
-  $('status').textContent = data.lastError ? `Helper error: ${data.lastError}`
-    : ago == null ? "Helper hasn't checked yet"
-    : ago > 180 ? `Last checked ${timer(ago)} ago, may be down`
-    : `${open.length} servers · updated ${Math.round(ago)}s ago`;
+  $('status').className = bad ? 'status bad' : 'status';
+  $('statusText').textContent = data.lastError ? `The server list had a problem: ${data.lastError}`
+    : ago == null ? 'Waiting for the first check…'
+    : ago > 180 ? `Last checked ${timer(ago)} ago, the helper may be down`
+    : `${open.length} servers · updated ${ago} seconds ago`;
 
-  const known = open.filter(s => s.start).sort((a, b) => seraphiel(a, now).sortKey - seraphiel(b, now).sortKey);
-  $('cards').innerHTML = known.length ? known.map(s => card(s, now)).join('')
-    : '<p class="empty">No timers yet. Add a reading below.</p>';
-
+  const known = open.filter(s => s.start).map(s => ({ s, r: seraphiel(s, now) })).sort((a, b) => a.r.sortKey - b.r.sortKey);
   const unknown = open.filter(s => !s.start).sort((a, b) => b.playing - a.playing);
-  $('unknown').innerHTML = unknown.map(s => `<div class="row">
-      <div class="when" style="color:var(--muted)">?<small>needs a reading</small></div>
-      <div><div class="sid">${esc(s.short)}</div><div class="meta"><button class="btn btn-ghost" data-log="${esc(s.short)}" style="padding:3px 8px;font-size:.75rem">Add reading</button></div></div>
-      <div class="at"><span>uptime unknown</span></div>
-      <div class="players">${s.playing}/${s.max}</div>
-      <a class="btn btn-join" href="${joinLink(s)}">Join</a>
-    </div>`).join('');
+  const upNow = known.filter(k => k.r.stage === 'bloom');
+  const upcoming = known.filter(k => k.r.stage !== 'bloom');
+
+  // Next to descend: the soonest spawn that hasn't happened yet
+  const next = upcoming[0];
+  if (next) {
+    $('heroWhen').textContent = timer(next.r.until);
+    $('heroServer').innerHTML = `Server <span class="mono">${esc(next.s.short)}</span> · ${next.s.playing}/${next.s.max} players · ${plusMinus(next.r.width, true)}`;
+    $('heroJoin').href = joinLink(next.s); $('heroJoin').removeAttribute('aria-disabled');
+    const wd = whiteDeath(next.s, now);
+    $('heroWd').hidden = !wd; $('heroWd').textContent = wd;
+  } else {
+    $('heroWhen').textContent = '–:––';
+    $('heroServer').textContent = 'No upcoming spawns are known yet.';
+  }
+
+  // Also soon: servers where she's up right now, then the next ones after the hero
+  const soon = [...upNow, ...upcoming.slice(1)].slice(0, 3);
+  $('soonList').innerHTML = soon.map(({ s, r }) => `<div class="soon-item">
+      ${ICON[r.stage]}
+      <div class="info">
+        <span class="t c-${r.stage}">${whenText(r)}</span>
+        <span class="who"><span class="mono">${esc(s.short)}</span> · ${s.playing}/${s.max} players</span>
+      </div>
+      <a class="btn-line" href="${joinLink(s)}">Join</a>
+    </div>`).join('') || '<p class="who" style="margin:8px 0">Nothing else coming up yet.</p>';
+
+  // Every server
+  let html = '';
+  if (filter === 'unknown') html = unknown.map(rowUnknown).join('');
+  else {
+    const list = filter === 'soon' ? known.filter(k => k.r.stage !== 'closed') : known;
+    html = list.map(({ s, r }) => rowKnown(s, r, now)).join('') + (filter === 'all' ? unknown.map(rowUnknown).join('') : '');
+  }
+  const emptyMsg = filter === 'unknown' ? 'Every server has a timer right now. Nothing needs a reading.'
+    : filter === 'soon' ? 'Nothing is spawning in the next 10 minutes.' : 'No servers yet.';
+  $('rows').innerHTML = html || `<p class="empty">${emptyMsg}</p>`;
 
   const closed = data.servers.filter(s => s.closedAt);
   $('closed').textContent = closed.length ? `Recently closed: ${closed.map(s => s.short).join(', ')}` : '';
 }
-
-$('footer').innerHTML =
-  `<b>How it works:</b> A helper checks Everveil's public server list every minute. New servers are timed automatically; older ones need one reading. ` +
-  `Seraphiel first spawns at 1:00:00 uptime, then 1 hour after each kill, so each cycle adds a little uncertainty (shown as ±). ` +
-  `A reading with Seraphiel's time left, or a spawn report, makes a server exact again. ` +
-  `White Death has a ${WD_CHANCE}% chance to spawn every 2 server hours. <b>Join</b> opens the Roblox app straight into that server.`;
 
 refresh();
 setInterval(() => { if (!document.hidden) refresh(); }, REFRESH_MS);
