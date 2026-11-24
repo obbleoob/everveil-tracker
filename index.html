@@ -562,10 +562,22 @@ function render() {
   $('closed').textContent = closed.length ? `Recently closed: ${closed.map(s => s.short).join(', ')}` : '';
 }
 
+// Count this visit (a random ID kept in this browser, so repeat visits count as one person)
+(function countVisit() {
+  let v = '';
+  try { v = localStorage.getItem('everveil-visitor') || ''; } catch (e) {}
+  if (!/^[a-z0-9]{8,40}$/.test(v)) {
+    v = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => (b % 36).toString(36)).join('');
+    try { localStorage.setItem('everveil-visitor', v); } catch (e) {}
+  }
+  fetch(API + '/hit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ v }) }).catch(() => {});
+})();
+
 refresh();
 setInterval(() => { if (!document.hidden) refresh(); }, REFRESH_MS);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 setInterval(render, 1000);
 </script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "94bf881e0d1f4d2daa85bc6daade553a"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
