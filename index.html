@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Everveil Boss Tracker</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #181b22; --line: #2a2f3a; --text: #e6e8ee; --muted: #8b93a5;
+    --likely: #5fd38d; --soon: #f2c14e; --possible: #ff9f5a; --unlikely: #6b7385; --wd: #7cc4ff; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  header { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 1.3rem; margin: 0; }
+  h2 { font-size: .85rem; margin: 0 0 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  #status { font-size: .85rem; color: var(--muted); }
+  main { max-width: 960px; margin: 0 auto; padding: 20px; display: grid; gap: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .forms { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 760px) { .forms { grid-template-columns: 1fr; } }
+  form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); flex: 1 1 110px; }
+  input, select, button { font: inherit; color: var(--text); background: #0f1218; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  button { cursor: pointer; background: #2b3550; border-color: #3a4766; }
+  button:hover { background: #34406a; }
+  button.small { padding: 3px 8px; font-size: .8rem; background: transparent; }
+  .msg { width: 100%; margin: 2px 0 0; font-size: .85rem; min-height: 1.2em; color: var(--muted); }
+  .err { color: var(--bad); }
+  .muted { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 10px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { color: var(--muted); font-weight: 500; font-size: .8rem; }
+  .sid { font-family: ui-monospace, Consolas, monospace; font-weight: 600; }
+  .uptime { font-size: 1.1rem; font-weight: 600; }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .85rem; font-weight: 600; }
+  .likely   { background: rgba(95,211,141,.15);  color: var(--likely); }
+  .soon     { background: rgba(242,193,78,.15);  color: var(--soon); }
+  .possible { background: rgba(255,159,90,.12);  color: var(--possible); }
+  .unlikely { background: rgba(107,115,133,.15); color: var(--unlikely); }
+  .conf { font-size: .75rem; margin-left: 6px; color: var(--muted); }
+  .conf.High { color: var(--likely); } .conf.Medium { color: var(--soon); } .conf.Low { color: var(--bad); }
+  .tag { font-size: .7rem; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); margin-left: 6px; }
+  .wd { display: inline-block; margin-top: 4px; font-size: .78rem; color: var(--wd); }
+  .sub { font-size: .78rem; color: var(--muted); margin-top: 3px; }
+  .empty { color: var(--muted); font-style: italic; }
+  details { font-size: .85rem; color: var(--muted); }
+  details form { margin-top: 10px; }
+  footer { max-width: 960px; margin: 0 auto; padding: 0 20px 30px; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Everveil Boss Tracker</h1>
+  <div id="status">Loading…</div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Servers</h2>
+    <div id="list"></div>
+    <p class="sub" id="closed"></p>
+  </section>
+
+  <section class="card forms">
+    <div>
+      <h2>Log a server's uptime</h2>
+      <form id="logForm" autocomplete="off">
+        <label>Server ID <input id="serverId" list="shortIds" required placeholder="7e64-4b45"></label>
+        <label>Server uptime <input id="uptime" required placeholder="1:23:45"></label>
+        <label>Your computer time then <input id="readAt" placeholder="11:07:42 AM (blank = now)"></label>
+        <button type="submit">Save</button>
+        <p class="msg" id="logMsg"></p>
+      </form>
+      <datalist id="shortIds"></datalist>
+    </div>
+    <div>
+      <h2>Report a Seraphiel spawn</h2>
+      <form id="reportForm" autocomplete="off">
+        <label>Server <select id="reportServer"></select></label>
+        <label>Spawned at uptime <input id="reportUptime" placeholder="blank = just now"></label>
+        <button type="submit">Report</button>
+        <p class="msg" id="reportMsg"></p>
+      </form>
+    </div>
+  </section>
+
+  <section class="card">
+    <details id="keyBox">
+      <summary>Write key (needed to log or report)</summary>
+      <form id="keyForm" autocomplete="off">
+        <label>Write key <input id="writeKey" type="password"></label>
+        <button type="submit">Save key</button>
+        <p class="msg" id="keyMsg"></p>
+      </form>
+    </details>
+  </section>
+</main>
+
+<footer id="footer"></footer>
+
+<script>
+// ===== Paste your Cloudflare Worker URL here (no slash at the end) =====
+const API = 'https://everveil-tracker.yobbledoob.workers.dev';
+
+// ===== Boss settings (edit if the game changes) =====
+const SERA_EVERY = 3600;   // Seraphiel respawn timer, starts when it dies
+const FIRST_SPAWN = 3600;  // first spawn at 1:00:00 uptime
+// Time Seraphiel stays alive before dying, by player count. killLikely = typical.
+const SIZES = [
+  { name: 'Large',  minPlayers: 8, killMin: 10, killLikely: 20, killMax: 30 },
+  { name: 'Medium', minPlayers: 5, killMin: 20, killLikely: 40, killMax: 60 },
+  { name: 'Small',  minPlayers: 0, killMin: 20, killLikely: 45, killMax: 60 },
+];
+const LIKELY_AFTER = 180, LIKELY_BEFORE = 120, SOON_BEFORE = 300, POSSIBLE_BEFORE = 600;
+const CONF_HIGH = 60, CONF_MED = 300;
+const WD_EVERY = 7200, WD_CHANCE = 25, WD_SHOW_BEFORE = 900;
+const REFRESH_MS = 30000;
+
+// ===== State =====
+let data = null;      // last /state response
+let offset = 0;       // helper clock minus this computer's clock
+const srvNow = () => Date.now() + offset;
+const keyStore = {
+  get() { try { return localStorage.getItem('everveil-write-key') || ''; } catch (e) { return ''; } },
+  set(v) { try { localStorage.setItem('everveil-write-key', v); } catch (e) {} },
+};
+
+// ===== Helpers =====
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+function parseDuration(str) {
+  const s = str.trim().toLowerCase();
+  if (!s) return null;
+  if (/[hms]/.test(s)) {
+    const g = re => +((s.match(re) || [0, 0])[1]);
+    return g(/(\d+)\s*h/) * 3600 + g(/(\d+)\s*m/) * 60 + g(/(\d+)\s*s/);
+  }
+  const p = s.split(':').map(Number);
+  if (p.some(isNaN)) return null;
+  if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2];
+  if (p.length === 2) return p[0] * 60 + p[1];
+  return null;
+}
+// "11:07:42", "11:07:42 PM", "23:07:42" -> most recent matching moment on this computer's clock
+function parseClockTime(str, nowMs) {
+  const m = str.trim().toLowerCase().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm|a|p)?$/);
+  if (!m) return null;
+  let h = +m[1]; const min = +m[2], sec = +(m[3] || 0), ap = m[4];
+  if (h > 23 || min > 59 || sec > 59) return null;
+  let hours;
+  if (ap) { if (h > 12) return null; h = h % 12; hours = [ap[0] === 'p' ? h + 12 : h]; }
+  else hours = h < 12 ? [h, h + 12] : [h];
+  let best = null;
+  for (const hh of hours) for (const back of [0, 1]) {
+    const d = new Date(nowMs); d.setDate(d.getDate() - back); d.setHours(hh, min, sec, 0);
+    const t = d.getTime();
+    if (t <= nowMs + 60000 && (best == null || t > best)) best = t;
+  }
+  return best;
+}
+function clock(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  return `${Math.floor(sec / 3600)}:${pad(Math.floor(sec % 3600 / 60))}:${pad(sec % 60)}`;
+}
+function short(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  return h ? `${h}h ${pad(m)}m` : `${m}m ${pad(s)}s`;
+}
+const uptimeOf = (srv, now) => (now - srv.start) / 1000;
+const sizeOf = srv => SIZES.find(z => (srv.playing || 0) >= z.minPlayers) || SIZES[SIZES.length - 1];
+
+// ===== Seraphiel prediction =====
+function seraWindow(srv, up) {
+  const z = sizeOf(srv);
+  const known = srv.anchor != null ? srv.anchor : FIRST_SPAWN;
+  for (let m = 0; m < 1000; m++) {
+    const lo = known + m * (SERA_EVERY + z.killMin);
+    const hi = known + m * (SERA_EVERY + z.killMax);
+    const best = known + m * (SERA_EVERY + z.killLikely);
+    if (hi + LIKELY_AFTER >= up) return { lo, hi, best };
+  }
+}
+function seraphiel(srv, now) {
+  const up = uptimeOf(srv, now);
+  const w = seraWindow(srv, up);
+  const width = w.hi - w.lo;
+  const conf = width <= CONF_HIGH ? 'High' : width <= CONF_MED ? 'Medium' : 'Low';
+  const range = width ? `${clock(w.lo)}–${clock(w.hi)}, best guess ${clock(w.best)}` : clock(w.lo);
+  let cls, label, sub;
+  if (up > w.hi)       { cls = 'likely'; label = 'Likely up now'; sub = `window ended ${short(up - w.hi)} ago`; }
+  else if (up >= w.lo) { cls = 'likely'; label = 'Due now';       sub = `window ${range}`; }
+  else {
+    const until = w.lo - up;
+    if (until <= LIKELY_BEFORE)        { cls = 'likely';   label = 'Likely'; }
+    else if (until <= SOON_BEFORE)     { cls = 'soon';     label = 'Soon'; }
+    else if (until <= POSSIBLE_BEFORE) { cls = 'possible'; label = 'Possible'; }
+    else                               { cls = 'unlikely'; label = 'Unlikely'; }
+    sub = `window ${range} (in ${short(until)})`;
+  }
+  return { cls, label, sub, conf, sortKey: w.lo - up };
+}
+function whiteDeath(srv, now) {
+  const up = uptimeOf(srv, now);
+  const since = up % WD_EVERY, until = WD_EVERY - since;
+  if (up > WD_EVERY && since <= LIKELY_AFTER) return `White Death roll just happened (${WD_CHANCE}%)`;
+  if (until <= WD_SHOW_BEFORE) return `White Death roll in ${short(until)} (${WD_CHANCE}%)`;
+  return '';
+}
+
+// ===== Talking to the helper =====
+const configured = () => /^https?:\/\//.test(API);
+async function refresh() {
+  if (!configured()) { $('status').innerHTML = '<span class="err">Set the API address at the top of index.html.</span>'; return; }
+  try {
+    const t0 = Date.now();
+    const r = await fetch(API.replace(/\/$/, '') + '/state', { cache: 'no-store' });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.status);
+    offset = j.now - Math.round((t0 + Date.now()) / 2);
+    data = j;
+    fillPickers();
+    render();
+  } catch (e) {
+    $('status').innerHTML = `<span class="err">Can't reach the helper: ${esc(e.message)}</span>`;
+  }
+}
+async function post(path, body) {
+  const r = await fetch(API.replace(/\/$/, '') + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Key': keyStore.get() },
+    body: JSON.stringify(body),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || `Error ${r.status}`);
+  return j;
+}
+const openServers = () => (data ? data.servers.filter(s => !s.closedAt) : []);
+
+function fillPickers() {
+  const open = openServers();
+  $('shortIds').innerHTML = open.map(s => `<option value="${esc(s.short)}">`).join('');
+  const sel = $('reportServer'), keep = sel.value;
+  const known = open.filter(s => s.start);
+  sel.innerHTML = known.length
+    ? known.map(s => `<option value="${esc(s.short)}">${esc(s.short)}</option>`).join('')
+    : '<option value="">(no servers with known uptime)</option>';
+  if (known.some(s => s.short === keep)) sel.value = keep;
+}
+
+// ===== Forms =====
+$('logForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('logMsg');
+  const id = $('serverId').value.trim().toLowerCase();
+  const up = parseDuration($('uptime').value);
+  if (up == null) return void (msg.innerHTML = '<span class="err">Couldn\'t read that uptime. Try 1:23:45.</span>');
+  const readRaw = $('readAt').value;
+  const readLocal = readRaw.trim() ? parseClockTime(readRaw, Date.now()) : Date.now();
+  if (readLocal == null) return void (msg.innerHTML = '<span class="err">Couldn\'t read that computer time. Try 11:07:42 AM.</span>');
+  msg.textContent = 'Saving…';
+  try {
+    const r = await post('/log', { short: id, uptime: up, readAt: readLocal + offset });
+    msg.textContent = `Saved ${r.short}: uptime ${clock(up)}.` +
+      (r.diffFromAutoSec != null ? ` (The helper already tracks this server; your reading differs by ${r.diffFromAutoSec}s.)` : '');
+    $('uptime').value = ''; $('readAt').value = '';
+    refresh();
+  } catch (err) { msg.innerHTML = `<span class="err">${esc(err.message)}</span>`; }
+});
+
+$('reportForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('reportMsg');
+  const srv = openServers().find(s => s.short === $('reportServer').value);
+  if (!srv) return void (msg.innerHTML = '<span class="err">Pick a server with a known uptime.</span>');
+  const raw = $('reportUptime').value;
+  const at = raw.trim() ? parseDuration(raw) : uptimeOf(srv, srvNow());
+  if (at == null) return void (msg.innerHTML = '<span class="err">Couldn\'t read that uptime. Try 2:00:25.</span>');
+  msg.textContent = 'Saving…';
+  try {
+    await post('/report', { short: srv.short, uptime: Math.round(at) });
+    msg.textContent = `Got it: Seraphiel spawned at ${clock(at)} on ${srv.short}.`;
+    $('reportUptime').value = '';
+    refresh();
+  } catch (err) { msg.innerHTML = `<span class="err">${esc(err.message)}</span>`; }
+});
+
+$('keyForm').addEventListener('submit', e => {
+  e.preventDefault();
+  keyStore.set($('writeKey').value.trim());
+  $('keyMsg').textContent = 'Key saved in this browser.';
+});
+$('writeKey').value = keyStore.get();
+if (!keyStore.get()) $('keyBox').open = true;
+
+$('list').addEventListener('click', e => {
+  const b = e.target.closest('button[data-log]');
+  if (!b) return;
+  $('serverId').value = b.dataset.log;
+  $('uptime').focus();
+});
+
+// ===== Render =====
+function render() {
+  if (!data) return;
+  const now = srvNow();
+  const ago = data.lastPoll ? (now - data.lastPoll) / 1000 : null;
+  $('status').innerHTML = data.lastError
+    ? `<span class="err">Helper error: ${esc(data.lastError)}</span>`
+    : ago == null ? 'Helper hasn\'t checked yet'
+    : ago > 180 ? `<span class="err">Helper last checked ${short(ago)} ago (may be down)</span>`
+    : `Helper checked ${short(ago)} ago · ${openServers().length} servers`;
+
+  const open = openServers();
+  const known = open.filter(s => s.start).map(s => ({ s, sera: seraphiel(s, now) })).sort((a, b) => a.sera.sortKey - b.sera.sortKey);
+  const unknown = open.filter(s => !s.start).sort((a, b) => b.playing - a.playing);
+
+  const rowKnown = ({ s, sera }) => {
+    const wd = whiteDeath(s, now);
+    const bits = [`${sizeOf(s).name}`];
+    if (s.anchor != null) bits.push(`last reported spawn ${clock(s.anchor)}`);
+    return `<tr>
+      <td><span class="sid">${esc(s.short)}</span><span class="tag">${s.startSource}</span><div class="sub">${bits.join(' · ')}</div></td>
+      <td>${s.playing}/${s.max}</td>
+      <td class="uptime">${clock(uptimeOf(s, now))}</td>
+      <td><span class="pill ${sera.cls}">${sera.label}</span><span class="conf ${sera.conf}">${sera.conf} confidence</span>
+          <div class="sub">${sera.sub}</div>${wd ? `<span class="wd">${wd}</span>` : ''}</td>
+    </tr>`;
+  };
+  const rowUnknown = s => `<tr>
+      <td><span class="sid">${esc(s.short)}</span></td>
+      <td>${s.playing}/${s.max}</td>
+      <td class="muted">unknown</td>
+      <td><span class="sub">Started before the helper did. </span><button class="small" data-log="${esc(s.short)}">Log uptime</button></td>
+    </tr>`;
+
+  $('list').innerHTML = open.length
+    ? `<table><thead><tr><th>Server</th><th>Players</th><th>Uptime</th><th>Seraphiel</th></tr></thead>
+       <tbody>${known.map(rowKnown).join('')}${unknown.map(rowUnknown).join('')}</tbody></table>`
+    : '<p class="empty">No servers yet.</p>';
+
+  const closed = data.servers.filter(s => s.closedAt);
+  $('closed').textContent = closed.length ? `Recently closed: ${closed.map(s => s.short).join(', ')}` : '';
+}
+
+$('footer').innerHTML =
+  `The helper checks Everveil's public server list every minute. New servers get their uptime automatically ("auto"); servers that were already running need one reading ("manual"). ` +
+  `Seraphiel: first spawn at ${clock(FIRST_SPAWN)}, then 1 hour after each kill. Assumed kill time: ` +
+  SIZES.map(z => `${z.name} (${z.minPlayers}+ players) ${z.killMin}–${z.killMax}s, usually ~${z.killLikely}s`).join(', ') +
+  `. Reporting a real spawn resets the window. White Death: ${WD_CHANCE}% roll every 2 server hours.`;
+
+refresh();
+setInterval(() => { if (!document.hidden) refresh(); }, REFRESH_MS);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+setInterval(render, 1000);
+</script>
+</body>
+</html>
