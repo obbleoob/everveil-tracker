@@ -69,6 +69,7 @@
         <label>Server ID <input id="serverId" list="shortIds" required placeholder="7e64-4b45"></label>
         <label>Server uptime <input id="uptime" required placeholder="1:23:45 or 2d 1:23:45"></label>
         <label>Your computer time then <input id="readAt" placeholder="11:07:42 AM (blank = now)"></label>
+        <label>Seraphiel time left <input id="seraLeft" placeholder="7:12 (optional)"></label>
         <button type="submit">Save</button>
         <p class="msg" id="logMsg"></p>
       </form>
@@ -267,12 +268,21 @@ $('logForm').addEventListener('submit', async e => {
   const readRaw = $('readAt').value;
   const readLocal = readRaw.trim() ? parseClockTime(readRaw, Date.now()) : Date.now();
   if (readLocal == null) return void (msg.innerHTML = '<span class="err">Couldn\'t read that computer time. Try 11:07:42 AM.</span>');
+  const leftRaw = $('seraLeft').value;
+  const left = leftRaw.trim() ? parseDuration(leftRaw) : null;
+  if (leftRaw.trim() && left == null) return void (msg.innerHTML = '<span class="err">Couldn\'t read Seraphiel\'s time left. Try 7:12.</span>');
   msg.textContent = 'Saving…';
   try {
     const r = await post('/log', { short: id, uptime: up, readAt: readLocal + offset });
-    msg.textContent = `Saved ${r.short}: uptime ${clock(up)}.` +
+    let note = `Saved ${r.short}: uptime ${clock(up)}.` +
       (r.diffFromAutoSec != null ? ` (The helper already tracks this server; your reading differs by ${r.diffFromAutoSec}s.)` : '');
-    $('uptime').value = ''; $('readAt').value = '';
+    if (left != null) {
+      // Seraphiel's next spawn, in server uptime, is exactly "uptime when read + time left".
+      await post('/report', { short: r.short, uptime: Math.round(up + left) });
+      note += ` Seraphiel set to spawn at ${clock(up + left)} uptime.`;
+    }
+    msg.textContent = note;
+    $('uptime').value = ''; $('readAt').value = ''; $('seraLeft').value = '';
     refresh();
   } catch (err) { msg.innerHTML = `<span class="err">${esc(err.message)}</span>`; }
 });
@@ -327,7 +337,7 @@ function render() {
   const rowKnown = ({ s, sera }) => {
     const wd = whiteDeath(s, now);
     const bits = [`${sizeOf(s).name}`];
-    if (s.anchor != null) bits.push(`last reported spawn ${clock(s.anchor)}`);
+    if (s.anchor != null) bits.push(`known spawn at ${clock(s.anchor)}`);
     return `<tr>
       <td><span class="sid">${esc(s.short)}</span><span class="tag">${s.startSource}</span><div class="sub">${bits.join(' · ')}</div></td>
       <td>${s.playing}/${s.max}</td>
