@@ -67,7 +67,7 @@
       <h2>Log a server's uptime</h2>
       <form id="logForm" autocomplete="off">
         <label>Server ID <input id="serverId" list="shortIds" required placeholder="7e64-4b45"></label>
-        <label>Server uptime <input id="uptime" required placeholder="1:23:45"></label>
+        <label>Server uptime <input id="uptime" required placeholder="1:23:45 or 2d 1:23:45"></label>
         <label>Your computer time then <input id="readAt" placeholder="11:07:42 AM (blank = now)"></label>
         <button type="submit">Save</button>
         <p class="msg" id="logMsg"></p>
@@ -130,18 +130,25 @@ const keyStore = {
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const pad = n => String(n).padStart(2, '0');
+// Accepts "1:23:45", "23:45", "1h 23m 45s", "2d 01:23:45", "2 days 1:23:45", "2:01:23:45" (d:h:m:s)
 function parseDuration(str) {
-  const s = str.trim().toLowerCase();
+  let s = str.trim().toLowerCase();
   if (!s) return null;
+  let days = 0;
+  const dm = s.match(/^(\d+)\s*(?:days?|d)(?![a-z])[\s,]*/);
+  if (dm) { days = +dm[1]; s = s.slice(dm[0].length).trim(); if (!s) return days * 86400; }
+  let rest = null;
   if (/[hms]/.test(s)) {
     const g = re => +((s.match(re) || [0, 0])[1]);
-    return g(/(\d+)\s*h/) * 3600 + g(/(\d+)\s*m/) * 60 + g(/(\d+)\s*s/);
+    rest = g(/(\d+)\s*h/) * 3600 + g(/(\d+)\s*m/) * 60 + g(/(\d+)\s*s/);
+  } else {
+    const p = s.split(':').map(Number);
+    if (p.some(isNaN)) return null;
+    if (p.length === 4) rest = p[0] * 86400 + p[1] * 3600 + p[2] * 60 + p[3];
+    else if (p.length === 3) rest = p[0] * 3600 + p[1] * 60 + p[2];
+    else if (p.length === 2) rest = p[0] * 60 + p[1];
   }
-  const p = s.split(':').map(Number);
-  if (p.some(isNaN)) return null;
-  if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2];
-  if (p.length === 2) return p[0] * 60 + p[1];
-  return null;
+  return rest == null ? null : days * 86400 + rest;
 }
 // "11:07:42", "11:07:42 PM", "23:07:42" -> most recent matching moment on this computer's clock
 function parseClockTime(str, nowMs) {
