@@ -4,103 +4,138 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Everveil Boss Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0b0f17; --panel: #131a26; --panel2: #18202e; --line: #243044;
-    --text: #e9edf5; --muted: #8d98ad; --gold: #e8c170; --gold2: #f5d996;
-    --green: #5fd38d; --amber: #f2c14e; --orange: #ff9f5a; --blue: #7cc4ff; --red: #ff6b6b;
+    --panel: rgba(15, 20, 36, .80); --line: rgba(227, 187, 107, .55); --line-soft: rgba(227, 187, 107, .22);
+    --text: #f3eee4; --muted: #b9b2a3; --gold: #e3bb6b; --gold2: #f6dea2; --bronze: #9c7440;
+    --green: #86e0b0; --amber: #f2c66a; --orange: #ef9a73; --blue: #a7d4f2; --red: #ff8080;
+    --title: "Cinzel", Georgia, serif; --serif: "Cormorant Garamond", Georgia, serif;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: radial-gradient(1200px 500px at 50% -200px, #1d2940 0%, var(--bg) 60%) fixed, var(--bg);
-  }
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 20px 40px; }
-  header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
-  h1 { margin: 0; font-size: 1.6rem; letter-spacing: .01em; }
+  body { margin: 0; min-height: 100vh; color: var(--text); background: #141a30;
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  /* ---- the sky shrine behind everything ---- */
+  .sky { position: fixed; inset: 0; z-index: -1; overflow: hidden;
+         background: linear-gradient(180deg, #10152b 0%, #1c2648 34%, #3f4a72 58%, #7d6a86 80%, #b48a85 100%); }
+  .beam { position: absolute; left: 50%; top: -5%; width: 240px; height: 110%; transform: translateX(-50%);
+          background: linear-gradient(90deg, transparent, rgba(255,243,220,.07) 25%, rgba(255,246,228,.13) 50%, rgba(255,243,220,.07) 75%, transparent);
+          filter: blur(8px); }
+  .clouds { position: absolute; left: -10%; right: -10%; bottom: -70px; height: 280px; filter: blur(5px);
+            background:
+              radial-gradient(140px 70px at 8% 70%, rgba(255,238,232,.20), transparent 70%),
+              radial-gradient(180px 90px at 24% 82%, rgba(255,238,232,.17), transparent 70%),
+              radial-gradient(150px 70px at 44% 76%, rgba(255,238,232,.14), transparent 70%),
+              radial-gradient(200px 95px at 64% 86%, rgba(255,238,232,.17), transparent 70%),
+              radial-gradient(160px 75px at 86% 72%, rgba(255,238,232,.20), transparent 70%); }
+  .pillars { position: absolute; bottom: 0; height: 62vh; opacity: .16; }
+  .pillars svg { height: 100%; width: auto; display: block; }
+  .pillars.left { left: 0; } .pillars.right { right: 0; transform: scaleX(-1); }
+
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 30px 20px 48px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 22px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .sun { width: 52px; height: 52px; flex: none; filter: drop-shadow(0 0 12px rgba(227,187,107,.45)); }
+  h1 { margin: 0; font-family: var(--title); font-weight: 700; font-size: 1.75rem; letter-spacing: .04em; }
   h1 span { color: var(--gold); }
-  .tagline { margin: 4px 0 0; color: var(--muted); font-size: .95rem; }
-  .status { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
-            background: var(--panel); border: 1px solid var(--line); font-size: .85rem; color: var(--muted); }
+  .tagline { margin: 2px 0 0; font-family: var(--serif); font-style: italic; font-size: 1.1rem; color: #d9d1c1; }
+  .status { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 999px;
+            background: var(--panel); border: 1px solid var(--line-soft); font-size: .85rem; color: var(--muted); backdrop-filter: blur(6px); }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
   .dot.bad { background: var(--red); box-shadow: 0 0 8px var(--red); }
 
-  h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 28px 0 12px; font-weight: 600; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  h2 { display: flex; align-items: center; gap: 12px; margin: 30px 0 14px; font-family: var(--title); font-weight: 500;
+       font-size: .9rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  h2::before, h2::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--line), transparent); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: 16px; }
 
-  .card { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line);
-          border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
-  .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--accent, var(--line)); }
-  .card.s-up    { --accent: var(--green); }
-  .card.s-close { --accent: var(--green); }
-  .card.s-soon  { --accent: var(--amber); }
-  .card.s-near  { --accent: var(--orange); }
+  /* ---- cards look like the in-game boss panel ---- */
+  .card, .panel-box, details.panel, .list, footer, .tip {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(5, 8, 20, .35), inset 0 0 0 1px rgba(255,255,255,.03); backdrop-filter: blur(6px); }
+  .card { padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
+  .card::before { content: ""; position: absolute; left: 12%; right: 12%; top: 0; height: 2px;
+                  background: linear-gradient(90deg, transparent, var(--accent, transparent), transparent); }
+  .card.s-up, .card.s-close { --accent: var(--green); border-color: rgba(134,224,176,.6); }
+  .card.s-soon { --accent: var(--amber); }
+  .card.s-near { --accent: var(--orange); }
   .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .sid { font-family: ui-monospace, Consolas, monospace; font-weight: 700; font-size: .95rem; }
-  .chip { font-size: .75rem; color: var(--muted); background: #0e141e; border: 1px solid var(--line); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
-  .label { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
-  .big { font-size: 2.3rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
-  .s-up .big, .s-close .big { color: var(--green); }
+  .sid { font-family: ui-monospace, Consolas, monospace; font-weight: 700; font-size: .92rem; letter-spacing: .02em; }
+  .chip { font-size: .74rem; color: var(--muted); background: rgba(0,0,0,.25); border: 1px solid var(--line-soft); padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .label { font-family: var(--serif); font-size: 1.02rem; color: #d9d1c1; }
+  .big { font-family: var(--title); font-weight: 700; font-size: 2.4rem; line-height: 1.05; color: var(--gold);
+         font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(227,187,107,.18); }
+  .s-up .big, .s-close .big { color: var(--green); text-shadow: 0 0 18px rgba(134,224,176,.25); }
   .s-soon .big { color: var(--amber); }
   .s-near .big { color: var(--orange); }
-  .s-far .big { color: var(--text); }
-  .facts { font-size: .82rem; color: var(--muted); line-height: 1.55; font-variant-numeric: tabular-nums; }
+  .facts { font-size: .82rem; color: var(--muted); line-height: 1.6; font-variant-numeric: tabular-nums; }
   .facts b { color: var(--text); font-weight: 600; }
-  .wd { font-size: .8rem; color: var(--blue); background: rgba(124,196,255,.08); border: 1px solid rgba(124,196,255,.25); border-radius: 8px; padding: 5px 8px; }
+  .wd { font-size: .8rem; color: var(--blue); background: rgba(167,212,242,.08); border: 1px solid rgba(167,212,242,.28); border-radius: 8px; padding: 5px 8px; }
 
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; cursor: pointer;
-         font: inherit; font-weight: 700; font-size: .9rem; border-radius: 10px; padding: 9px 12px; border: 1px solid transparent; }
-  .btn-join { background: var(--gold); color: #1b1407; margin-top: auto; }
-  .btn-join:hover { background: var(--gold2); }
-  .btn-ghost { background: transparent; color: var(--text); border-color: var(--line); }
-  .btn-ghost:hover { border-color: var(--muted); }
-  .btn-main { background: #2b3a57; color: var(--text); border-color: #3b4d72; }
-  .btn-main:hover { background: #34466a; }
+         font: inherit; font-weight: 700; font-size: .88rem; border-radius: 8px; padding: 9px 12px; border: 1px solid transparent; }
+  .btn-join { margin-top: auto; font-family: var(--title); letter-spacing: .08em; color: #2a1d08;
+              background: linear-gradient(180deg, var(--gold2), #d2a557); border-color: #f7e4b6;
+              box-shadow: 0 4px 14px rgba(227,187,107,.25); }
+  .btn-join:hover { filter: brightness(1.07); }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--line-soft); }
+  .btn-ghost:hover { border-color: var(--gold); }
+  .btn-main { background: rgba(227,187,107,.14); color: var(--gold2); border-color: var(--line); font-family: var(--title); letter-spacing: .05em; }
+  .btn-main:hover { background: rgba(227,187,107,.24); }
 
-  .list { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-  .row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); }
+  .tip { display: flex; gap: 12px; align-items: center; padding: 12px 16px; font-size: .9rem; line-height: 1.5; }
+  .tip .sunlet { color: var(--gold); font-size: 1.2rem; }
+  .tip b { color: var(--gold); }
+
+  .list { overflow: hidden; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line-soft); }
   .row:first-child { border-top: 0; }
   .row .sid { flex: 1; }
-  .row .btn { padding: 6px 10px; font-size: .8rem; }
+  .row .btn { padding: 6px 10px; font-size: .78rem; }
+  .row .btn-join { margin-top: 0; }
   .empty { color: var(--muted); font-style: italic; padding: 14px; }
 
-  details.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-top: 12px; }
-  details.panel > summary { cursor: pointer; padding: 14px 0; font-weight: 600; list-style: none; }
+  details.panel { padding: 0 16px; margin-top: 14px; }
+  details.panel > summary { cursor: pointer; padding: 14px 0; list-style: none; font-family: var(--title); font-size: .95rem; letter-spacing: .04em; color: var(--gold2); }
   details.panel > summary::-webkit-details-marker { display: none; }
-  details.panel > summary::before { content: "▸ "; color: var(--muted); }
-  details.panel[open] > summary::before { content: "▾ "; }
+  details.panel > summary::before { content: "\25B8  "; color: var(--gold); }
+  details.panel[open] > summary::before { content: "\25BE  "; }
   .panel-body { padding-bottom: 16px; }
-  .hint { color: var(--muted); font-size: .85rem; margin: 0 0 12px; line-height: 1.5; }
+  .hint { color: var(--muted); font-size: .86rem; margin: 0 0 12px; line-height: 1.55; }
+  .hint b { color: var(--text); }
   form { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; align-items: end; }
   label { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; color: var(--muted); }
-  input, select { font: inherit; color: var(--text); background: #0d131d; border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; }
+  input, select { font: inherit; color: var(--text); background: rgba(0,0,0,.3); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 11px; }
   input:focus, select:focus { outline: none; border-color: var(--gold); }
   .msg { grid-column: 1 / -1; margin: 0; font-size: .85rem; color: var(--muted); min-height: 1.2em; }
   .ok { color: var(--green); } .err { color: var(--red); }
-  .sub-title { font-size: .85rem; font-weight: 600; margin: 18px 0 8px; }
+  .sub-title { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin: 18px 0 8px; color: var(--text); }
 
-  .tip { display: flex; gap: 10px; align-items: flex-start; background: rgba(232,193,112,.08); border: 1px solid rgba(232,193,112,.35);
-         color: var(--text); border-radius: 12px; padding: 12px 14px; font-size: .9rem; line-height: 1.5; }
-  .tip b { color: var(--gold); }
-  .closed { color: var(--muted); font-size: .82rem; margin-top: 10px; }
-  footer { margin-top: 32px; color: var(--muted); font-size: .82rem; line-height: 1.6; border-top: 1px solid var(--line); padding-top: 16px; }
-  footer b { color: var(--text); }
+  .closed { color: #d9d1c1; font-size: .82rem; margin-top: 10px; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+  footer { margin-top: 28px; padding: 14px 16px; color: var(--muted); font-size: .82rem; line-height: 1.65; }
+  footer b { color: var(--gold2); font-weight: 600; }
 </style>
 </head>
 <body>
+<div class="sky"><div class="beam"></div><div class="clouds"></div><div class="pillars left"><svg viewBox="0 0 220 500" preserveAspectRatio="xMinYMax meet" aria-hidden="true"><g fill="#efe3cf"><rect x="24" y="70" width="56" height="12" rx="2"/><rect x="28" y="82" width="48" height="10"/><rect x="30" y="92" width="44" height="390"/><rect x="29" y="132" width="46" height="6" fill="#9c7440"/><rect x="29" y="440" width="46" height="6" fill="#9c7440"/><rect x="22" y="482" width="60" height="18" rx="2"/><polygon points="130,254 141,240 150,250 159,243 166,256 166,482 130,482"/><rect x="129" y="280" width="38" height="6" fill="#9c7440"/><rect x="129" y="440" width="38" height="6" fill="#9c7440"/><rect x="122" y="482" width="52" height="18" rx="2"/></g></svg></div><div class="pillars right"><svg viewBox="0 0 220 500" preserveAspectRatio="xMinYMax meet" aria-hidden="true"><g fill="#efe3cf"><rect x="24" y="70" width="56" height="12" rx="2"/><rect x="28" y="82" width="48" height="10"/><rect x="30" y="92" width="44" height="390"/><rect x="29" y="132" width="46" height="6" fill="#9c7440"/><rect x="29" y="440" width="46" height="6" fill="#9c7440"/><rect x="22" y="482" width="60" height="18" rx="2"/><polygon points="130,254 141,240 150,250 159,243 166,256 166,482 130,482"/><rect x="129" y="280" width="38" height="6" fill="#9c7440"/><rect x="129" y="440" width="38" height="6" fill="#9c7440"/><rect x="122" y="482" width="52" height="18" rx="2"/></g></svg></div></div>
 <div class="wrap">
   <header>
-    <div>
-      <h1>Everveil <span>Boss Tracker</span></h1>
-      <p class="tagline">Live Seraphiel timers for every public server. Click <b>Join</b> to jump straight in.</p>
+    <div class="brand">
+      <svg class="sun" viewBox="0 0 100 100" aria-hidden="true"><polygon points="50.0,2.0 55.9,20.6 68.4,5.7 66.7,25.1 83.9,16.1 74.9,33.3 94.3,31.6 79.4,44.1 98.0,50.0 79.4,55.9 94.3,68.4 74.9,66.7 83.9,83.9 66.7,74.9 68.4,94.3 55.9,79.4 50.0,98.0 44.1,79.4 31.6,94.3 33.3,74.9 16.1,83.9 25.1,66.7 5.7,68.4 20.6,55.9 2.0,50.0 20.6,44.1 5.7,31.6 25.1,33.3 16.1,16.1 33.3,25.1 31.6,5.7 44.1,20.6" fill="#b9874a"/><circle cx="50" cy="50" r="24" fill="#e3bb6b"/><circle cx="50" cy="50" r="15" fill="#f6dea2"/></svg>
+      <div>
+        <h1>Everveil <span>Boss Tracker</span></h1>
+        <p class="tagline">Seraphiel, the Dawn Angel &middot; live respawn timers</p>
+      </div>
     </div>
     <div class="status"><span class="dot" id="dot"></span><span id="status">Loading…</span></div>
   </header>
 
-  <div class="tip"><span>⏱</span><span><b>Tip:</b> Be there 1–2 minutes before the timer hits 0:00. The times are estimates and can be a little off, so arriving early means you won't miss the spawn.</span></div>
+  <div class="tip"><span class="sunlet">☀</span><span><b>Tip:</b> Be there 1–2 minutes before the timer hits 0:00. Times are estimates and can be a little off, so arriving early means you won't miss the spawn.</span></div>
 
-  <h2>Seraphiel · next spawns</h2>
+  <h2>Next Seraphiel spawns</h2>
   <div class="grid" id="cards"></div>
 
   <div id="unknownWrap">
@@ -376,11 +411,11 @@ function card(s, now) {
   const players = `${s.playing}/${s.max} players`;
   let label, big, line;
   if (r.state === 'up') {
-    label = 'Seraphiel';
+    label = 'Seraphiel has descended';
     big = 'Up now';
     line = `Spawned about ${timer(Math.max(0, r.since))} ago, may already be down`;
   } else {
-    label = 'Seraphiel in';
+    label = 'Seraphiel respawns in';
     big = timer(r.until);
     line = `Spawns at uptime <b>${clock(r.at)}</b> · ${r.pm}`;
   }
