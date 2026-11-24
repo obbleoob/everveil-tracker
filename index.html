@@ -6,143 +6,106 @@
 <title>Everveil Boss Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
-    --panel: rgba(15, 20, 36, .80); --line: rgba(227, 187, 107, .55); --line-soft: rgba(227, 187, 107, .22);
-    --text: #f3eee4; --muted: #b9b2a3; --gold: #e3bb6b; --gold2: #f6dea2; --bronze: #9c7440;
-    --green: #86e0b0; --amber: #f2c66a; --orange: #ef9a73; --blue: #a7d4f2; --red: #ff8080;
-    --title: "Cinzel", Georgia, serif; --serif: "Cormorant Garamond", Georgia, serif;
+    --paper: #f1ebe0; --paper2: #e8dfd0; --ink: #2a2420; --muted: #7b7064; --rule: #d6c9b4;
+    --bronze: #8a6433; --teal: #2f5d66; --teal2: #24484f;
+    --up: #2e7a4e; --soon: #a8730f; --near: #b0522c; --wd: #3d6a8a;
+    --fell: "IM Fell English", Georgia, serif;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; color: var(--text); background: #141a30;
+  body { margin: 0; background: var(--paper); color: var(--ink);
          font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 40px 22px 56px; }
 
-  /* ---- the sky shrine behind everything ---- */
-  .sky { position: fixed; inset: 0; z-index: -1; overflow: hidden;
-         background: linear-gradient(180deg, #10152b 0%, #1c2648 34%, #3f4a72 58%, #7d6a86 80%, #b48a85 100%); }
-  .beam { position: absolute; left: 50%; top: -5%; width: 240px; height: 110%; transform: translateX(-50%);
-          background: linear-gradient(90deg, transparent, rgba(255,243,220,.07) 25%, rgba(255,246,228,.13) 50%, rgba(255,243,220,.07) 75%, transparent);
-          filter: blur(8px); }
-  .clouds { position: absolute; left: -10%; right: -10%; bottom: -70px; height: 280px; filter: blur(5px);
-            background:
-              radial-gradient(140px 70px at 8% 70%, rgba(255,238,232,.20), transparent 70%),
-              radial-gradient(180px 90px at 24% 82%, rgba(255,238,232,.17), transparent 70%),
-              radial-gradient(150px 70px at 44% 76%, rgba(255,238,232,.14), transparent 70%),
-              radial-gradient(200px 95px at 64% 86%, rgba(255,238,232,.17), transparent 70%),
-              radial-gradient(160px 75px at 86% 72%, rgba(255,238,232,.20), transparent 70%); }
-  .pillars { position: absolute; bottom: 0; height: 62vh; opacity: .16; }
-  .pillars svg { height: 100%; width: auto; display: block; }
-  .pillars.left { left: 0; } .pillars.right { right: 0; transform: scaleX(-1); }
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+           padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+  .kicker { margin: 0; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--bronze); font-weight: 600; }
+  h1 { margin: 2px 0 0; font-family: var(--fell); font-weight: 400; font-size: 2.6rem; line-height: 1; }
+  .status { font-size: .85rem; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--up); }
+  .dot.bad { background: var(--near); }
+  .note { margin: 12px 0 0; font-family: var(--fell); font-style: italic; font-size: 1.08rem; color: #5c5248; }
 
-  .wrap { max-width: 1060px; margin: 0 auto; padding: 30px 20px 48px; }
-  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 22px; }
-  .brand { display: flex; align-items: center; gap: 14px; }
-  .sun { width: 52px; height: 52px; flex: none; filter: drop-shadow(0 0 12px rgba(227,187,107,.45)); }
-  h1 { margin: 0; font-family: var(--title); font-weight: 700; font-size: 1.75rem; letter-spacing: .04em; }
-  h1 span { color: var(--gold); }
-  .tagline { margin: 2px 0 0; font-family: var(--serif); font-style: italic; font-size: 1.1rem; color: #d9d1c1; }
-  .status { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 999px;
-            background: var(--panel); border: 1px solid var(--line-soft); font-size: .85rem; color: var(--muted); backdrop-filter: blur(6px); }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
-  .dot.bad { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  h2 { font-family: var(--fell); font-weight: 400; font-size: 1.5rem; margin: 34px 0 6px; }
+  .sched { border-top: 1px solid var(--ink); }
+  .row, .heads { display: grid; grid-template-columns: 110px 1fr 170px 80px 92px; gap: 14px; align-items: center; }
+  .heads { padding: 8px 6px; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule); }
+  .row { padding: 12px 6px; border-bottom: 1px solid var(--rule); }
+  .row.s-up { background: rgba(46,122,78,.07); }
+  .when { font-size: 1.55rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .s-up .when, .s-close .when { color: var(--up); }
+  .s-soon .when { color: var(--soon); }
+  .s-near .when { color: var(--near); }
+  .when small { display: block; font-size: .72rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .sid { font-family: ui-monospace, Consolas, monospace; font-weight: 700; font-size: .95rem; }
+  .meta { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+  .meta .wd { color: var(--wd); }
+  .at { font-size: .85rem; font-variant-numeric: tabular-nums; line-height: 1.45; }
+  .at span { color: var(--muted); font-size: .78rem; display: block; }
+  .players { font-size: .88rem; font-variant-numeric: tabular-nums; color: #4a423a; }
 
-  h2 { display: flex; align-items: center; gap: 12px; margin: 30px 0 14px; font-family: var(--title); font-weight: 500;
-       font-size: .9rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
-  h2::before, h2::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--line), transparent); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: 16px; }
+  .btn { font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; text-decoration: none; text-align: center;
+         border-radius: 4px; padding: 7px 10px; border: 1px solid var(--teal); color: var(--teal); background: transparent; }
+  .btn:hover { background: var(--teal); color: var(--paper); }
+  .btn-join::after { content: " \2192"; }
+  .btn-ghost { border-color: var(--rule); color: var(--ink); }
+  .btn-ghost:hover { background: var(--paper2); color: var(--ink); }
+  .btn-main { background: var(--teal); color: var(--paper); }
+  .btn-main:hover { background: var(--teal2); }
+  .empty { color: var(--muted); font-style: italic; padding: 14px 6px; }
+  .closed { color: var(--muted); font-size: .82rem; margin-top: 10px; }
 
-  /* ---- cards look like the in-game boss panel ---- */
-  .card, .panel-box, details.panel, .list, footer, .tip {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(5, 8, 20, .35), inset 0 0 0 1px rgba(255,255,255,.03); backdrop-filter: blur(6px); }
-  .card { padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
-  .card::before { content: ""; position: absolute; left: 12%; right: 12%; top: 0; height: 2px;
-                  background: linear-gradient(90deg, transparent, var(--accent, transparent), transparent); }
-  .card.s-up, .card.s-close { --accent: var(--green); border-color: rgba(134,224,176,.6); }
-  .card.s-soon { --accent: var(--amber); }
-  .card.s-near { --accent: var(--orange); }
-  .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .sid { font-family: ui-monospace, Consolas, monospace; font-weight: 700; font-size: .92rem; letter-spacing: .02em; }
-  .chip { font-size: .74rem; color: var(--muted); background: rgba(0,0,0,.25); border: 1px solid var(--line-soft); padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
-  .label { font-family: var(--serif); font-size: 1.02rem; color: #d9d1c1; }
-  .big { font-family: var(--title); font-weight: 700; font-size: 2.4rem; line-height: 1.05; color: var(--gold);
-         font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(227,187,107,.18); }
-  .s-up .big, .s-close .big { color: var(--green); text-shadow: 0 0 18px rgba(134,224,176,.25); }
-  .s-soon .big { color: var(--amber); }
-  .s-near .big { color: var(--orange); }
-  .facts { font-size: .82rem; color: var(--muted); line-height: 1.6; font-variant-numeric: tabular-nums; }
-  .facts b { color: var(--text); font-weight: 600; }
-  .wd { font-size: .8rem; color: var(--blue); background: rgba(167,212,242,.08); border: 1px solid rgba(167,212,242,.28); border-radius: 8px; padding: 5px 8px; }
-
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; cursor: pointer;
-         font: inherit; font-weight: 700; font-size: .88rem; border-radius: 8px; padding: 9px 12px; border: 1px solid transparent; }
-  .btn-join { margin-top: auto; font-family: var(--title); letter-spacing: .08em; color: #2a1d08;
-              background: linear-gradient(180deg, var(--gold2), #d2a557); border-color: #f7e4b6;
-              box-shadow: 0 4px 14px rgba(227,187,107,.25); }
-  .btn-join:hover { filter: brightness(1.07); }
-  .btn-ghost { background: transparent; color: var(--text); border-color: var(--line-soft); }
-  .btn-ghost:hover { border-color: var(--gold); }
-  .btn-main { background: rgba(227,187,107,.14); color: var(--gold2); border-color: var(--line); font-family: var(--title); letter-spacing: .05em; }
-  .btn-main:hover { background: rgba(227,187,107,.24); }
-
-  .tip { display: flex; gap: 12px; align-items: center; padding: 12px 16px; font-size: .9rem; line-height: 1.5; }
-  .tip .sunlet { color: var(--gold); font-size: 1.2rem; }
-  .tip b { color: var(--gold); }
-
-  .list { overflow: hidden; }
-  .row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line-soft); }
-  .row:first-child { border-top: 0; }
-  .row .sid { flex: 1; }
-  .row .btn { padding: 6px 10px; font-size: .78rem; }
-  .row .btn-join { margin-top: 0; }
-  .empty { color: var(--muted); font-style: italic; padding: 14px; }
-
-  details.panel { padding: 0 16px; margin-top: 14px; }
-  details.panel > summary { cursor: pointer; padding: 14px 0; list-style: none; font-family: var(--title); font-size: .95rem; letter-spacing: .04em; color: var(--gold2); }
+  details.panel { border-top: 1px solid var(--rule); margin-top: 0; }
+  details.panel:last-of-type { border-bottom: 1px solid var(--rule); }
+  details.panel > summary { cursor: pointer; padding: 14px 2px; list-style: none; font-family: var(--fell); font-size: 1.2rem; }
   details.panel > summary::-webkit-details-marker { display: none; }
-  details.panel > summary::before { content: "\25B8  "; color: var(--gold); }
-  details.panel[open] > summary::before { content: "\25BE  "; }
-  .panel-body { padding-bottom: 16px; }
-  .hint { color: var(--muted); font-size: .86rem; margin: 0 0 12px; line-height: 1.55; }
-  .hint b { color: var(--text); }
-  form { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; align-items: end; }
+  details.panel > summary::after { content: "+"; float: right; color: var(--muted); font-family: system-ui, sans-serif; }
+  details.panel[open] > summary::after { content: "\2212"; }
+  .gap { height: 34px; }
+  .panel-body { padding: 0 2px 18px; }
+  .hint { color: var(--muted); font-size: .88rem; margin: 0 0 12px; line-height: 1.55; }
+  .hint b { color: var(--ink); }
+  form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; align-items: end; }
   label { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; color: var(--muted); }
-  input, select { font: inherit; color: var(--text); background: rgba(0,0,0,.3); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 11px; }
-  input:focus, select:focus { outline: none; border-color: var(--gold); }
+  input, select { font: inherit; color: var(--ink); background: #fbf8f2; border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; }
+  input:focus, select:focus { outline: none; border-color: var(--teal); }
   .msg { grid-column: 1 / -1; margin: 0; font-size: .85rem; color: var(--muted); min-height: 1.2em; }
-  .ok { color: var(--green); } .err { color: var(--red); }
-  .sub-title { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin: 18px 0 8px; color: var(--text); }
+  .ok { color: var(--up); } .err { color: var(--near); }
+  .sub-title { font-size: .9rem; font-weight: 600; margin: 18px 0 8px; }
 
-  .closed { color: #d9d1c1; font-size: .82rem; margin-top: 10px; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
-  footer { margin-top: 28px; padding: 14px 16px; color: var(--muted); font-size: .82rem; line-height: 1.65; }
-  footer b { color: var(--gold2); font-weight: 600; }
+  footer { margin-top: 30px; color: var(--muted); font-size: .82rem; line-height: 1.65; }
+  footer b { color: var(--ink); }
+
+  @media (max-width: 680px) {
+    .heads { display: none; }
+    .row { grid-template-columns: 1fr auto; row-gap: 6px; }
+    .row .at, .row .players { grid-column: 1; }
+    .row .btn { grid-column: 2; grid-row: 1 / span 2; }
+  }
 </style>
 </head>
 <body>
-<div class="sky"><div class="beam"></div><div class="clouds"></div><div class="pillars left"><svg viewBox="0 0 220 500" preserveAspectRatio="xMinYMax meet" aria-hidden="true"><g fill="#efe3cf"><rect x="24" y="70" width="56" height="12" rx="2"/><rect x="28" y="82" width="48" height="10"/><rect x="30" y="92" width="44" height="390"/><rect x="29" y="132" width="46" height="6" fill="#9c7440"/><rect x="29" y="440" width="46" height="6" fill="#9c7440"/><rect x="22" y="482" width="60" height="18" rx="2"/><polygon points="130,254 141,240 150,250 159,243 166,256 166,482 130,482"/><rect x="129" y="280" width="38" height="6" fill="#9c7440"/><rect x="129" y="440" width="38" height="6" fill="#9c7440"/><rect x="122" y="482" width="52" height="18" rx="2"/></g></svg></div><div class="pillars right"><svg viewBox="0 0 220 500" preserveAspectRatio="xMinYMax meet" aria-hidden="true"><g fill="#efe3cf"><rect x="24" y="70" width="56" height="12" rx="2"/><rect x="28" y="82" width="48" height="10"/><rect x="30" y="92" width="44" height="390"/><rect x="29" y="132" width="46" height="6" fill="#9c7440"/><rect x="29" y="440" width="46" height="6" fill="#9c7440"/><rect x="22" y="482" width="60" height="18" rx="2"/><polygon points="130,254 141,240 150,250 159,243 166,256 166,482 130,482"/><rect x="129" y="280" width="38" height="6" fill="#9c7440"/><rect x="129" y="440" width="38" height="6" fill="#9c7440"/><rect x="122" y="482" width="52" height="18" rx="2"/></g></svg></div></div>
 <div class="wrap">
   <header>
-    <div class="brand">
-      <svg class="sun" viewBox="0 0 100 100" aria-hidden="true"><polygon points="50.0,2.0 55.9,20.6 68.4,5.7 66.7,25.1 83.9,16.1 74.9,33.3 94.3,31.6 79.4,44.1 98.0,50.0 79.4,55.9 94.3,68.4 74.9,66.7 83.9,83.9 66.7,74.9 68.4,94.3 55.9,79.4 50.0,98.0 44.1,79.4 31.6,94.3 33.3,74.9 16.1,83.9 25.1,66.7 5.7,68.4 20.6,55.9 2.0,50.0 20.6,44.1 5.7,31.6 25.1,33.3 16.1,16.1 33.3,25.1 31.6,5.7 44.1,20.6" fill="#b9874a"/><circle cx="50" cy="50" r="24" fill="#e3bb6b"/><circle cx="50" cy="50" r="15" fill="#f6dea2"/></svg>
-      <div>
-        <h1>Everveil <span>Boss Tracker</span></h1>
-        <p class="tagline">Seraphiel, the Dawn Angel &middot; live respawn timers</p>
-      </div>
+    <div>
+      <p class="kicker">Everveil</p>
+      <h1>Seraphiel Timers</h1>
     </div>
     <div class="status"><span class="dot" id="dot"></span><span id="status">Loading…</span></div>
   </header>
+  <p class="note">Times are estimates, so get there a minute or two early.</p>
 
-  <div class="tip"><span class="sunlet">☀</span><span><b>Tip:</b> Be there 1–2 minutes before the timer hits 0:00. Times are estimates and can be a little off, so arriving early means you won't miss the spawn.</span></div>
-
-  <h2>Next Seraphiel spawns</h2>
-  <div class="grid" id="cards"></div>
-
-  <div id="unknownWrap">
-    <h2>Needs a reading</h2>
-    <div class="list" id="unknown"></div>
+  <h2>Schedule</h2>
+  <div class="sched">
+    <div class="heads"><span>Spawns in</span><span>Server</span><span>At server uptime</span><span>Players</span><span></span></div>
+    <div id="cards"></div>
+    <div id="unknown"></div>
   </div>
   <div class="closed" id="closed"></div>
+
+  <div class="gap"></div>
 
   <details class="panel" id="updatePanel">
     <summary>Add a reading or report a spawn</summary>
@@ -408,23 +371,15 @@ $('unknown').addEventListener('click', e => {
 function card(s, now) {
   const r = seraphiel(s, now);
   const wd = whiteDeath(s, now);
-  const players = `${s.playing}/${s.max} players`;
-  let label, big, line;
-  if (r.state === 'up') {
-    label = 'Seraphiel has descended';
-    big = 'Up now';
-    line = `Spawned about ${timer(Math.max(0, r.since))} ago, may already be down`;
-  } else {
-    label = 'Seraphiel respawns in';
-    big = timer(r.until);
-    line = `Spawns at uptime <b>${clock(r.at)}</b> · ${r.pm}`;
-  }
-  return `<div class="card s-${r.state}">
-    <div class="top"><span class="sid">${esc(s.short)}</span><span class="chip">${players}</span></div>
-    <div><div class="label">${label}</div><div class="big">${big}</div></div>
-    <div class="facts">${line}<br>Server uptime <b>${clock(uptimeOf(s, now))}</b></div>
-    ${wd ? `<div class="wd">${wd}</div>` : ''}
-    <a class="btn btn-join" href="${joinLink(s)}">Join server</a>
+  const when = r.state === 'up'
+    ? `Up now<small>spawned ${timer(Math.max(0, r.since))} ago</small>`
+    : `${timer(r.until)}<small>${r.pm}</small>`;
+  return `<div class="row s-${r.state}">
+    <div class="when">${when}</div>
+    <div><div class="sid">${esc(s.short)}</div>${wd ? `<div class="meta"><span class="wd">${wd}</span></div>` : ''}</div>
+    <div class="at">${clock(r.at)}<span>now ${clock(uptimeOf(s, now))}</span></div>
+    <div class="players">${s.playing}/${s.max}</div>
+    <a class="btn btn-join" href="${joinLink(s)}">Join</a>
   </div>`;
 }
 
@@ -438,17 +393,18 @@ function render() {
   $('status').textContent = data.lastError ? `Helper error: ${data.lastError}`
     : ago == null ? "Helper hasn't checked yet"
     : ago > 180 ? `Last checked ${timer(ago)} ago, may be down`
-    : `Live · ${open.length} servers · checked ${Math.round(ago)}s ago`;
+    : `${open.length} servers · updated ${Math.round(ago)}s ago`;
 
   const known = open.filter(s => s.start).sort((a, b) => seraphiel(a, now).sortKey - seraphiel(b, now).sortKey);
   $('cards').innerHTML = known.length ? known.map(s => card(s, now)).join('')
     : '<p class="empty">No timers yet. Add a reading below.</p>';
 
   const unknown = open.filter(s => !s.start).sort((a, b) => b.playing - a.playing);
-  $('unknownWrap').style.display = unknown.length ? '' : 'none';
   $('unknown').innerHTML = unknown.map(s => `<div class="row">
-      <span class="sid">${esc(s.short)}</span><span class="chip">${s.playing}/${s.max} players</span>
-      <button class="btn btn-ghost" data-log="${esc(s.short)}">Add reading</button>
+      <div class="when" style="color:var(--muted)">?<small>needs a reading</small></div>
+      <div><div class="sid">${esc(s.short)}</div><div class="meta"><button class="btn btn-ghost" data-log="${esc(s.short)}" style="padding:3px 8px;font-size:.75rem">Add reading</button></div></div>
+      <div class="at"><span>uptime unknown</span></div>
+      <div class="players">${s.playing}/${s.max}</div>
       <a class="btn btn-join" href="${joinLink(s)}">Join</a>
     </div>`).join('');
 
@@ -457,7 +413,7 @@ function render() {
 }
 
 $('footer').innerHTML =
-  `<b>How it works.</b> A helper checks Everveil's public server list every minute. New servers are timed automatically; older ones need one reading. ` +
+  `<b>How it works:</b> A helper checks Everveil's public server list every minute. New servers are timed automatically; older ones need one reading. ` +
   `Seraphiel first spawns at 1:00:00 uptime, then 1 hour after each kill, so each cycle adds a little uncertainty (shown as ±). ` +
   `A reading with Seraphiel's time left, or a spawn report, makes a server exact again. ` +
   `White Death has a ${WD_CHANCE}% chance to spawn every 2 server hours. <b>Join</b> opens the Roblox app straight into that server.`;
