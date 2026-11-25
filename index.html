@@ -97,6 +97,8 @@
   .panel { width: 100%; text-align: left; background: var(--card); border: 1.5px solid var(--gold-line); border-radius: 22px; padding: 24px 28px; }
   .panel[hidden] { display: none; }
   .panel h3 { margin: 0 0 6px; font: 600 28px/1.1 var(--serif); color: var(--ink-dark); }
+  .how { margin: 6px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.55; color: var(--ink); }
+  .how b { color: var(--ink-dark); }
   .panel p.hint { margin: 0 0 16px; font-size: 14px; color: var(--soft); line-height: 1.5; }
   .panel form { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: end; }
   .panel label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: var(--soft); }
@@ -188,17 +190,18 @@
       <p class="footlinks">
         <button type="button" data-open="addPanel">Add a reading</button> ·
         <button type="button" data-open="reportPanel">Report a spawn</button> ·
-        <button type="button" data-open="keyPanel">Write key</button>
+        <button type="button" data-open="howPanel">How it works</button>
       </p>
 
       <div class="panel" id="addPanel" hidden>
         <h3>Add a reading</h3>
-        <p class="hint">Copy these from the game. Seraphiel's time left is the most useful: it makes the timer exact. Leave "Your computer time" blank if you're typing it in right away.</p>
+        <p class="hint">Anyone can add one. Copy the server ID and uptime from the game. Seraphiel's time left is the most useful part: it makes the timer exact.
+          If you're typing this in right away, leave "Time you read it" blank. If you wrote it down earlier, enter the exact time you read it, in your own time zone. For an exact clock, use <a href="https://time.is" target="_blank" rel="noopener">time.is</a>.</p>
         <form id="logForm" autocomplete="off">
           <label>Server ID <input id="serverId" list="shortIds" required placeholder="7e64-4b45"></label>
           <label>Server uptime <input id="uptime" required placeholder="3d 21:31:14"></label>
           <label>Seraphiel time left <input id="seraLeft" placeholder="59:23"></label>
-          <label>Your computer time <input id="readAt" placeholder="Blank = now"></label>
+          <label>Time you read it <input id="readAt" placeholder="Blank = just now"></label>
           <button type="submit">Save reading</button>
           <p class="msg" id="logMsg" role="status"></p>
         </form>
@@ -216,14 +219,17 @@
         </form>
       </div>
 
-      <div class="panel" id="keyPanel" hidden>
-        <h3>Write key</h3>
-        <p class="hint">Needed once per browser to add readings or report spawns. Viewing works without it.</p>
-        <form id="keyForm" autocomplete="off">
-          <label>Write key <input id="writeKey" type="password"></label>
-          <button type="submit">Save key</button>
-          <p class="msg" id="keyMsg" role="status"></p>
-        </form>
+      <div class="panel" id="howPanel" hidden>
+        <h3>How it works</h3>
+        <ul class="how">
+          <li><b>The server list updates itself.</b> Every minute the site checks Everveil's public servers on Roblox for new servers, closed servers and player counts.</li>
+          <li><b>Seraphiel's timer.</b> She first appears 1 hour after a server starts. Once she's defeated, the next one comes 1 hour later. Busy servers kill her faster, so each spawn drifts a little; the ± next to a time shows how sure the estimate is.</li>
+          <li><b>New servers are timed automatically.</b> Servers that were already running need one reading from a player. Anyone can add one under "Add a reading", and Seraphiel's time left from the game makes the timer exact.</li>
+          <li><b>Time zones don't matter.</b> Every time on this page is either a countdown or a server's uptime, so it's the same for everyone everywhere. The only clock time you ever type is "Time you read it", in your own local time, and the site converts it for you.</li>
+          <li><b>Use an exact clock.</b> Your computer or phone clock can be off by a minute or more. When you note down a reading to enter later, check the time on <a href="https://time.is" target="_blank" rel="noopener">time.is</a>, or just leave the time blank and enter it right away.</li>
+          <li><b>White Death</b> has a 25% chance to appear every 2 hours of server uptime. Servers show a note when one could be close.</li>
+          <li><b>Join a minute or two early.</b> All times are estimates.</li>
+        </ul>
       </div>
     </footer>
   </div>
@@ -268,10 +274,6 @@ let data = null;      // last /state response
 let offset = 0;       // helper clock minus this computer's clock
 let filter = 'all';
 const srvNow = () => Date.now() + offset;
-const keyStore = {
-  get() { try { return localStorage.getItem('everveil-write-key') || ''; } catch (e) { return ''; } },
-  set(v) { try { localStorage.setItem('everveil-write-key', v); } catch (e) {} },
-};
 
 // ===== Helpers =====
 const $ = id => document.getElementById(id);
@@ -383,7 +385,7 @@ async function refresh() {
 async function post(path, body) {
   const r = await fetch(API + path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Key': keyStore.get() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   const j = await r.json().catch(() => ({}));
@@ -406,7 +408,7 @@ const say = (el, text, cls = '') => { el.className = 'msg ' + cls; el.textConten
 
 // ===== Footer panels =====
 function openPanel(id, focusId) {
-  for (const p of ['addPanel', 'reportPanel', 'keyPanel']) $(p).hidden = p !== id;
+  for (const p of ['addPanel', 'reportPanel', 'howPanel']) $(p).hidden = p !== id;
   $(id).scrollIntoView({ behavior: 'smooth', block: 'center' });
   const f = focusId ? $(focusId) : $(id).querySelector('input, select');
   if (f) setTimeout(() => f.focus({ preventScroll: true }), 250);
@@ -425,14 +427,16 @@ $('logForm').addEventListener('submit', async e => {
   const up = parseDuration($('uptime').value);
   if (up == null) return say(msg, "Couldn't read that uptime. Try 3d 21:31:14 or 1:23:45.", 'err');
   const readRaw = $('readAt').value;
-  const readLocal = readRaw.trim() ? parseClockTime(readRaw, Date.now()) : Date.now();
-  if (readLocal == null) return say(msg, "Couldn't read that time. Try 12:07:27 PM.", 'err');
+  // A typed time is taken as the real time (e.g. from time.is) in this device's time zone.
+  // Blank = right now, using the helper's accurate clock (this device's clock may be off).
+  const readAt = readRaw.trim() ? parseClockTime(readRaw, srvNow()) : srvNow();
+  if (readAt == null) return say(msg, "Couldn't read that time. Try 12:07:27 PM.", 'err');
   const leftRaw = $('seraLeft').value;
   const left = leftRaw.trim() ? parseDuration(leftRaw) : null;
   if (leftRaw.trim() && left == null) return say(msg, "Couldn't read Seraphiel's time left. Try 59:23.", 'err');
   say(msg, 'Saving…');
   try {
-    const r = await post('/log', { short: id, uptime: up, readAt: readLocal + offset });
+    const r = await post('/log', { short: id, uptime: up, readAt });
     if (left != null) await post('/report', { short: r.short, uptime: Math.round(up + left) });
     say(msg, `Saved ${r.short}.` + (left != null ? ` Seraphiel spawns at uptime ${clock(up + left)}.` : ''), 'ok');
     $('uptime').value = ''; $('readAt').value = ''; $('seraLeft').value = '';
@@ -457,12 +461,6 @@ $('reportForm').addEventListener('submit', async e => {
   } catch (err) { say(msg, err.message, 'err'); }
 });
 
-$('keyForm').addEventListener('submit', e => {
-  e.preventDefault();
-  keyStore.set($('writeKey').value.trim());
-  say($('keyMsg'), 'Key saved in this browser.', 'ok');
-});
-$('writeKey').value = keyStore.get();
 
 // ===== Filters =====
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
