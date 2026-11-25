@@ -67,6 +67,24 @@
   .ico { width: 28px; height: 28px; flex: none; }
 
   /* Every server */
+  .help { background: #fdf3df; border: 1.5px solid var(--gold-line); border-radius: 22px; padding: 24px 28px;
+          display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; }
+  .help h2 { margin: 0 0 4px; font: 600 30px/1.1 var(--serif); color: var(--ink-dark); }
+  .help .lede { margin: 0 0 14px; font-size: 15px; color: var(--soft); line-height: 1.5; }
+  .help ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.5; }
+  .help ol b { color: var(--ink-dark); }
+  .help .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .help .btn-solid { min-height: 44px; display: inline-flex; align-items: center; padding: 0 22px; border: 0; border-radius: 999px;
+          background: var(--rose); color: #fff7ea; font: 800 15px var(--sans); cursor: pointer; }
+  .help .btn-solid:hover { background: var(--rose-dark); }
+  .need { border-left: 1.5px solid #eddcb3; padding-left: 26px; display: flex; flex-direction: column; gap: 10px; }
+  .need h3 { margin: 0; font: italic 500 22px/1.2 var(--serif); color: var(--soft); }
+  .need p { margin: 0; font-size: 14px; color: var(--soft); line-height: 1.5; }
+  .need .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .need .chip { min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border: 1.5px solid var(--gold-btn);
+          border-radius: 999px; background: var(--card); color: var(--gold-text); font: 700 14px var(--sans); cursor: pointer; }
+  .need .chip:hover { background: #f7ecd2; }
+  .need .chip .mono { color: var(--ink); }
   .list-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-top: 10px; }
   .list-head h2 { margin: 0; font: 600 38px/1 var(--serif); color: var(--ink-dark); }
   .legend { margin: 8px 0 0; font-size: 13px; color: var(--faint); }
@@ -114,6 +132,8 @@
     .hero-wrap { padding: 0; }
     .wing, .halo { display: none; }
     .hero { grid-template-columns: 1fr; padding: 28px 24px; gap: 24px; }
+    .help { grid-template-columns: 1fr; padding: 22px 20px; }
+    .need { border-left: 0; padding-left: 0; border-top: 1.5px solid #eddcb3; padding-top: 16px; }
     .soon-col { border-left: 0; padding-left: 0; border-top: 1.5px solid #eddcb3; padding-top: 16px; }
     .big { font-size: 76px; }
     .srow { grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-areas: "i t j" "i s j"; row-gap: 4px; padding: 12px; }
@@ -169,6 +189,28 @@
         </div>
       </section>
     </div>
+
+    <section class="help" aria-labelledby="helpTitle">
+      <div>
+        <h2 id="helpTitle">Help keep the timers right</h2>
+        <p class="lede">This site runs on readings from players like you. One reading takes about 20 seconds and fixes a server's timer for everyone.</p>
+        <ol>
+          <li><b>Join a server</b> and look at the in-game info: the server ID, the server uptime and Seraphiel's time left.</li>
+          <li><b>Add a reading</b> with those three things. Do it right away and leave the time blank, or note the exact time from <a href="https://time.is" target="_blank" rel="noopener">time.is</a> and enter it later.</li>
+          <li><b>Saw Seraphiel spawn?</b> Report it. That resets her timer on that server.</li>
+        </ol>
+        <div class="actions">
+          <button type="button" class="btn-solid" data-open="addPanel">Add a reading</button>
+          <button type="button" class="btn-line" data-open="reportPanel">Report a spawn</button>
+          <button type="button" class="btn-line" data-open="howPanel">How it works</button>
+        </div>
+      </div>
+      <div class="need" id="needBox">
+        <h3>Where help is needed</h3>
+        <p id="needText">Loading…</p>
+        <div class="chips" id="needChips"></div>
+      </div>
+    </section>
 
     <section aria-labelledby="everyTitle" style="display: flex; flex-direction: column; gap: 14px">
       <div class="list-head">
@@ -468,7 +510,7 @@ document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   render();
 }));
-$('rows').addEventListener('click', e => {
+document.addEventListener('click', e => {
   const b = e.target.closest('button[data-log]');
   if (!b) return;
   $('serverId').value = b.dataset.log;
@@ -502,6 +544,22 @@ function rowUnknown(s) {
     <span class="meta">uptime unknown</span>
     <a class="btn-line join" href="${joinLink(s)}">Join</a>
   </div>`;
+}
+
+// "Where help is needed": servers with no timer first, then the least certain timers
+function renderNeed(unknown, known) {
+  const shaky = known.filter(k => k.r.width >= 120).sort((a, b) => b.r.width - a.r.width);
+  const picks = [
+    ...unknown.map(s => ({ s, label: 'no timer' })),
+    ...shaky.map(({ s, r }) => ({ s, label: plusMinus(r.width) })),
+  ].slice(0, 6);
+  $('needText').textContent = unknown.length
+    ? `${unknown.length} server${unknown.length === 1 ? ' has' : 's have'} no timer yet. A reading from any of these helps the most:`
+    : shaky.length
+      ? 'Every server has a timer, but these are the least sure. A reading with Seraphiel\'s time left makes them exact:'
+      : 'Every timer is in good shape right now. Readings and spawn reports still keep them sharp.';
+  $('needChips').innerHTML = picks.map(({ s, label }) =>
+    `<button type="button" class="chip" data-log="${esc(s.short)}"><span class="mono">${esc(s.short)}</span>${esc(label)}</button>`).join('');
 }
 
 function render() {
@@ -557,6 +615,7 @@ function render() {
   $('rows').innerHTML = html || `<p class="empty">${emptyMsg}</p>`;
 
   const closed = data.servers.filter(s => s.closedAt);
+  renderNeed(unknown, known);
   $('closed').textContent = closed.length ? `Recently closed: ${closed.map(s => s.short).join(', ')}` : '';
 }
 
