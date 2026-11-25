@@ -265,7 +265,7 @@
         <h3>How it works</h3>
         <ul class="how">
           <li><b>The server list updates itself.</b> Every minute the site checks Everveil's public servers on Roblox for new servers, closed servers and player counts.</li>
-          <li><b>Seraphiel's timer.</b> She first appears 1 hour after a server starts. Once she's defeated, the next one comes 1 hour later. Busy servers kill her faster, so each spawn drifts a little; the ± next to a time shows how sure the estimate is.</li>
+          <li><b>Seraphiel's timer.</b> She first appears 1 hour after a server starts. Once she's defeated, the next one comes 1 hour later. Each fight adds about 5 to 10 seconds before the next timer starts, so spawns drift a little over time; the ± next to a time shows how sure the estimate is.</li>
           <li><b>New servers are timed automatically.</b> Servers that were already running need one reading from a player. Anyone can add one under "Add a reading", and Seraphiel's time left from the game makes the timer exact.</li>
           <li><b>Time zones don't matter.</b> Every time on this page is either a countdown or a server's uptime, so it's the same for everyone everywhere. The only clock time you ever type is "Time you read it", in your own local time, and the site converts it for you.</li>
           <li><b>Use an exact clock.</b> Your computer or phone clock can be off by a minute or more. When you note down a reading to enter later, check the time on <a href="https://time.is" target="_blank" rel="noopener">time.is</a>, or just leave the time blank and enter it right away.</li>
@@ -283,11 +283,9 @@ const API = 'https://everveil-tracker.yobbledoob.workers.dev';
 const PLACE_ID = '88206180860518';
 const SERA_EVERY = 3600;   // Seraphiel respawn timer, starts when she's defeated
 const FIRST_SPAWN = 3600;  // first spawn at 1:00:00 uptime
-// How long Seraphiel stays alive before she's defeated, by player count (seconds).
+// Extra seconds each spawn adds before the next timer starts (same for every server size).
 const SIZES = [
-  { name: 'Large',  minPlayers: 8, killMin: 10, killLikely: 20, killMax: 30 },
-  { name: 'Medium', minPlayers: 5, killMin: 20, killLikely: 40, killMax: 60 },
-  { name: 'Small',  minPlayers: 0, killMin: 20, killLikely: 45, killMax: 60 },
+  { name: 'Any', minPlayers: 0, killMin: 5, killLikely: 7.5, killMax: 10 },
 ];
 const UP_FOR = 180;          // "in bloom" for 3 min after the expected spawn
 const SOON = 600;            // "budding" = within 10 minutes
