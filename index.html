@@ -102,6 +102,18 @@
   .srow .sid .mono { font-size: 15px; }
   .srow .note { font-size: 13px; color: var(--wd); }
   .srow .meta { font-size: 14px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  /* Confidence meter: 4 bars, filled by how recent the last reading/report is */
+  .conf { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .conf .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 13px; }
+  .conf .bars i { display: block; width: 4px; border-radius: 1px; background: currentColor; opacity: .22; }
+  .conf .bars i:nth-child(1) { height: 5px; } .conf .bars i:nth-child(2) { height: 8px; }
+  .conf .bars i:nth-child(3) { height: 11px; } .conf .bars i:nth-child(4) { height: 13px; }
+  .conf .bars i.on { opacity: 1; }
+  .conf .ago { font-weight: 400; color: var(--faint); }
+  .page-doa .conf .ago { color: var(--d-faint); }
+  .conf.l4 { color: #5b8445; } .conf.l3 { color: #8a7d22; } .conf.l2 { color: #b0711c; } .conf.l1 { color: #9a3c49; }
+  .conf-note { margin: 4px 0 0; font-size: 13px; color: var(--faint); }
+  .page-doa .conf-note { color: var(--d-faint); }
   .c-bloom { color: var(--rose); } .c-bud { color: var(--gold); } .c-closed { color: var(--ink); }
   .linkbtn { background: none; border: 0; padding: 0; color: var(--rose); font: 700 13px var(--sans); text-decoration: underline; cursor: pointer; text-align: left; }
   .empty { margin: 0; padding: 28px 18px; font: italic 500 22px var(--serif); color: var(--faint); }
@@ -127,7 +139,91 @@
   .msg { grid-column: 1 / -1; margin: 0; min-height: 20px; font-size: 14px; color: var(--soft); }
   .msg.ok { color: #4f6b3a; font-weight: 700; } .msg.err { color: var(--rose); font-weight: 700; }
 
+  /* ===== Boss tabs ===== */
+  .views { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: #f3e8d2; margin-bottom: 22px; }
+  .views a { min-height: 38px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 999px; font: 700 14px var(--sans); color: #6e5e48; text-decoration: none; }
+  .views a:hover { color: var(--ink-dark); }
+  .views a[aria-current="page"] { background: var(--ink); color: #fffaf0; }
+
+  /* ===== Dead on Arrival (White Death) ===== */
+  body.doa { background: #e3e9ee; }
+  .page-doa { --d-ink: #1f2d3a; --d-soft: #4f6273; --d-faint: #6b7f90; --d-ice: #2f5874; --d-ice-dark: #22445b; --d-bone: #f4f1ea;
+              --d-card: #f5f8fa; --d-line: #b4c4d1; --d-rule: #d2dce4; color: var(--d-ink); }
+  .page-doa a { color: var(--d-ice); }
+  .page-doa .views { background: #d3dde5; }
+  .page-doa .views a { color: var(--d-soft); }
+  .page-doa .views a[aria-current="page"] { background: var(--d-ink); color: #eef3f6; }
+  .d-kicker { margin: 0; font-size: 13px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: #5c7a8e; }
+  .d-title { margin: 6px 0 0; font: italic 600 76px/0.95 var(--serif); color: var(--d-ink); }
+  .d-sub { margin: 10px 0 0; font: italic 500 21px var(--serif); letter-spacing: .08em; color: var(--d-faint); }
+  .spine { margin-top: 10px; width: 100%; max-width: 760px; }
+  .spine svg { width: 100%; height: auto; display: block; }
+  .page-doa .status { color: var(--d-faint); }
+  .page-doa .status .dot { background: #6f93ad; }
+  .page-doa .status.bad .dot { background: #8e3b46; }
+
+  .d-hero { position: relative; overflow: hidden; background: var(--d-card); border: 1.5px solid var(--d-line); border-radius: 10px; padding: 34px 40px;
+            display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 36px; box-shadow: 0 18px 40px rgba(40, 70, 100, .12); }
+  .d-hero > div { position: relative; }
+  .d-lead { display: flex; flex-direction: column; gap: 8px; }
+  .d-eyebrow { margin: 0; font: italic 500 26px/1.2 var(--serif); color: var(--d-soft); }
+  .d-big { font-size: 104px; font-weight: 800; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--d-ice); }
+  .d-big.now { font-size: 72px; color: var(--d-ink); }
+  .d-server { margin: 4px 0 0; font-size: 16px; color: var(--d-soft); }
+  .d-chance { margin: 0; font-size: 14px; color: var(--d-faint); }
+  .d-actions { display: flex; align-items: center; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+  .d-actions .hint { font-size: 14px; color: var(--d-faint); max-width: 230px; line-height: 1.4; }
+  .d-join { min-height: 50px; display: inline-flex; align-items: center; padding: 0 34px; border-radius: 999px; background: var(--d-ice);
+            color: #eef3f6 !important; font-weight: 800; font-size: 17px; text-decoration: none; }
+  .d-join:hover { background: var(--d-ice-dark); }
+  .d-join[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+  .d-line { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border: 1.5px solid #9fb2c2;
+            border-radius: 999px; font: 700 14px var(--sans); color: var(--d-ice); text-decoration: none; background: transparent; cursor: pointer; }
+  .d-line:hover { background: #e6edf2; }
+  .d-odds { border-left: 1.5px solid var(--d-rule); padding-left: 32px; display: flex; flex-direction: column; gap: 4px; }
+  .d-odds h2 { margin: 0; font: italic 500 22px/1.2 var(--serif); color: var(--d-soft); }
+  .d-pct { font-size: 56px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--d-ink); }
+  .d-odds p { margin: 0 0 10px; font-size: 14px; line-height: 1.5; color: var(--d-soft); }
+  .d-item { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--d-rule); }
+  .d-item .info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .d-item .t { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .d-item .who { font-size: 13px; color: var(--d-faint); }
+  .page-doa .mono { color: var(--d-ink); }
+  .page-doa .linkbtn { color: var(--d-ice); }
+
+  .d-listhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-top: 10px; }
+  .d-listhead h2 { margin: 0; font: 600 38px/1 var(--serif); color: var(--d-ink); }
+  .d-legend { margin: 8px 0 0; font-size: 13px; color: var(--d-faint); }
+  .d-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: #d3dde5; }
+  .d-tabs button { min-height: 40px; padding: 0 18px; border: 0; border-radius: 999px; font: 700 14px var(--sans); cursor: pointer; background: transparent; color: var(--d-soft); }
+  .d-tabs button[aria-pressed="true"] { background: var(--d-ink); color: #eef3f6; }
+  .drow { display: grid; grid-template-columns: 34px 130px minmax(0, 1fr) 110px 170px 92px; gap: 16px; align-items: center;
+          padding: 12px 18px; border-radius: 8px; border-bottom: 1px solid var(--d-rule); }
+  .drow.now { background: #d6e1ea; }
+  .drow .ico { width: 30px; height: 30px; }
+  .drow .t { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .drow .sub { display: block; font-size: 12px; color: var(--d-faint); }
+  .drow .sid { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .drow .sid .mono { font-size: 15px; }
+  .drow .meta { font-size: 14px; color: var(--d-soft); font-variant-numeric: tabular-nums; }
+  .d-now { color: var(--d-ink); } .d-soon { color: var(--d-ice); } .d-later { color: #3a4d5e; }
+  .d-empty { margin: 0; padding: 28px 18px; font: italic 500 22px var(--serif); color: var(--d-faint); }
+  .d-note { background: var(--d-card); border: 1.5px solid var(--d-line); border-radius: 10px; padding: 24px 28px; }
+  .d-note h3 { margin: 0 0 8px; font: 600 28px/1.1 var(--serif); color: var(--d-ink); }
+  .d-note ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.55; }
+  .d-note b { color: var(--d-ink); }
+  .d-note .d-actions { margin-top: 16px; }
+
   @media (max-width: 900px) {
+    .d-title { font-size: 54px; }
+    .d-hero { grid-template-columns: 1fr; padding: 28px 24px; gap: 24px; }
+    .d-odds { border-left: 0; padding-left: 0; border-top: 1.5px solid var(--d-rule); padding-top: 16px; }
+    .d-big { font-size: 76px; }
+    .d-wing { display: none; }
+    .drow { grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-areas: "i t j" "i s j"; row-gap: 4px; padding: 12px; }
+    .drow > .ico { grid-area: i; } .drow > .when { grid-area: t; } .drow > .sid { grid-area: s; } .drow > .d-line { grid-area: j; }
+    .drow > .meta { display: none; }
+    .d-tabs { width: 100%; } .d-tabs button { flex: 1; padding: 0 8px; }
     h1 { font-size: 56px; }
     .hero-wrap { padding: 0; }
     .wing, .halo { display: none; }
@@ -144,7 +240,7 @@
 </style>
 </head>
 <body>
-<div class="page">
+<div class="page" id="viewSera">
   <svg class="deco" aria-hidden="true" viewBox="0 0 420 260" style="left: -20px; top: -10px; width: 420px; height: 260px">
     <path d="M0 40 C90 60 170 70 260 120 M120 66 C150 30 190 20 220 14 M200 96 C220 140 250 160 290 170 M300 140 C330 140 360 150 390 170" fill="none" stroke="#9a6b52" stroke-width="5" stroke-linecap="round"/>
     <g fill="#f4bcc5"><circle cx="222" cy="10" r="9"/><circle cx="235" cy="20" r="9"/><circle cx="228" cy="34" r="9"/><circle cx="212" cy="32" r="9"/><circle cx="208" cy="18" r="9"/></g><circle cx="221" cy="23" r="5" fill="#d46a7e"/>
@@ -160,6 +256,7 @@
 
   <div class="wrap">
     <header>
+      <nav class="views" aria-label="Choose a boss"><a href="#" data-view="sera" aria-current="page">Seraphile</a><a href="#doa" data-view="doa">Dead on Arrival</a></nav>
       <p class="kicker">Everveil</p>
       <h1>Seraphile</h1>
       <p class="tagline">Make sure to join early</p>
@@ -217,6 +314,7 @@
         <div>
           <h2 id="everyTitle">Every server</h2>
           <p class="legend">In bloom: up now · Budding: within 10 minutes · Closed bud: later</p>
+          <p class="conf-note"><span class="conf l4"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span> Confidence shows how recently each server got a reading or spawn report: high under 2 hours, good under 6, fair under 24, low after that (assuming reports are trustworthy).</p>
         </div>
         <div class="tabs" role="group" aria-label="Filter servers">
           <button type="button" data-f="all" aria-pressed="true">All</button>
@@ -274,6 +372,85 @@
         </ul>
       </div>
     </footer>
+  </div>
+</div>
+
+<div class="page page-doa" id="viewDoa" hidden>
+  <!-- fog -->
+  <svg class="deco" aria-hidden="true" viewBox="0 0 1400 600" preserveAspectRatio="none" style="left: 0; top: 0; width: 100%; height: 600px">
+    <g fill="#f1f5f8" opacity=".75"><ellipse cx="160" cy="120" rx="420" ry="70"/><ellipse cx="1180" cy="210" rx="460" ry="80"/><ellipse cx="640" cy="470" rx="560" ry="60"/></g>
+    <g fill="#d6e0e8" opacity=".6"><ellipse cx="980" cy="70" rx="380" ry="40"/><ellipse cx="260" cy="360" rx="360" ry="45"/></g>
+  </svg>
+  <!-- bony wing -->
+  <svg class="deco d-wing" aria-hidden="true" viewBox="0 0 460 260" style="right: -110px; top: 30px; width: 460px; height: 260px; opacity: .55">
+    <path d="M70 200 L400 24 Q392 70 446 92 Q404 122 424 170 Q372 178 350 236 Q300 214 250 232 Q200 222 70 200 Z" fill="#c9d5de"/>
+    <path d="M70 200 L400 24 M70 200 L446 92 M70 200 L424 170 M70 200 L350 236 M70 200 L250 232 M70 200 L0 236" fill="none" stroke="#a6b7c5" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="70" cy="200" r="9" fill="#f4f1ea" stroke="#a6b7c5" stroke-width="3"/>
+  </svg>
+  <svg class="deco" aria-hidden="true" viewBox="0 0 400 1400" style="left: 3%; top: 120px; width: 60px; height: 1400px">
+    <g fill="#f8fafb"><circle cx="40" cy="40" r="5"/><circle cx="300" cy="260" r="4"/><circle cx="120" cy="520" r="6"/><circle cx="360" cy="760" r="4"/><circle cx="60" cy="1040" r="5"/><circle cx="260" cy="1300" r="4"/></g>
+  </svg>
+  <svg class="deco" aria-hidden="true" viewBox="0 0 400 1400" style="right: 4%; top: 380px; width: 60px; height: 1400px">
+    <g fill="#f8fafb"><circle cx="200" cy="30" r="5"/><circle cx="60" cy="330" r="4"/><circle cx="330" cy="610" r="6"/><circle cx="90" cy="900" r="4"/><circle cx="280" cy="1180" r="5"/></g>
+  </svg>
+
+  <div class="wrap">
+    <header>
+      <nav class="views" aria-label="Choose a boss"><a href="#" data-view="sera">Seraphile</a><a href="#doa" data-view="doa" aria-current="page">Dead on Arrival</a></nav>
+      <p class="d-kicker">Everveil · White Death</p>
+      <h1 class="d-title">Dead on Arrival</h1>
+      <p class="d-sub">— the Uncrowned —</p>
+      <div class="spine" id="spine" aria-hidden="true"></div>
+      <p class="status" id="dStatus" role="status"><span class="dot"></span><span id="dStatusText">Loading the server list…</span></p>
+    </header>
+
+    <section class="d-hero" aria-labelledby="dNextLabel">
+      <div class="d-lead">
+        <p class="d-eyebrow" id="dNextLabel">Next roll</p>
+        <span class="d-big" id="dWhen">–:––</span>
+        <p class="d-server" id="dServer">Loading…</p>
+        <p class="d-chance">When this hits zero, White Death has a 25% chance to appear.</p>
+        <div class="d-actions">
+          <a class="d-join" id="dJoin" href="#" aria-disabled="true">Join server</a>
+          <span class="hint">Be in the server before the roll. Times are estimates.</span>
+        </div>
+      </div>
+      <div class="d-odds">
+        <h2>The odds</h2>
+        <span class="d-pct" id="dPct">–</span>
+        <p id="dOddsText">Working it out…</p>
+        <div id="dSoon"></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="dEveryTitle" style="display: flex; flex-direction: column; gap: 14px">
+      <div class="d-listhead">
+        <div>
+          <h2 id="dEveryTitle">Every server</h2>
+          <p class="d-legend">Each server rolls once every 2 hours of uptime · Cracked crown: just rolled · Crown: rolls within 15 minutes</p>
+          <p class="conf-note"><span class="conf l4"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span> Confidence shows how recently each server got a reading or spawn report: high under 2 hours, good under 6, fair under 24, low after that (assuming reports are trustworthy).</p>
+        </div>
+        <div class="d-tabs" role="group" aria-label="Filter servers">
+          <button type="button" data-df="all" aria-pressed="true">All</button>
+          <button type="button" data-df="hour" aria-pressed="false">Next hour</button>
+        </div>
+      </div>
+      <div id="dRows"></div>
+    </section>
+
+    <section class="d-note" aria-labelledby="dHowTitle">
+      <h3 id="dHowTitle">How White Death works</h3>
+      <ul>
+        <li><b>She rolls on a schedule.</b> Every 2 hours of a server's uptime (2:00:00, 4:00:00, 6:00:00 and so on) there's a 25% chance White Death appears.</li>
+        <li><b>The odds stack across servers.</b> One server is a 1 in 4 shot, but with several servers rolling in the same hour, the chance she shows up somewhere climbs fast. "The odds" above does that math for you.</li>
+        <li><b>Time zones don't matter.</b> Everything here is a countdown or a server uptime, the same for everyone.</li>
+        <li><b>These timers use the same server readings as Seraphile.</b> A server with no timer needs one reading from a player, and an uptime reading makes both bosses exact.</li>
+      </ul>
+      <div class="d-actions">
+        <button type="button" class="d-line" id="dAddReading">Add a reading</button>
+        <span class="hint" id="dNeed"></span>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -511,6 +688,7 @@ document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click
 document.addEventListener('click', e => {
   const b = e.target.closest('button[data-log]');
   if (!b) return;
+  if (b.dataset.goto === 'sera') goSera();
   $('serverId').value = b.dataset.log;
   openPanel('addPanel', 'uptime');
 });
@@ -527,7 +705,7 @@ function rowKnown(s, r, now) {
   return `<div class="srow ${r.stage}">
     ${ICON[r.stage]}
     <div class="when"><span class="t c-${r.stage}">${whenText(r)}</span><span class="sub">${subText(r)}</span></div>
-    <div class="sid"><span class="mono">${esc(s.short)}</span>${wd ? `<span class="note">${wd}</span>` : ''}</div>
+    <div class="sid"><span class="mono">${esc(s.short)}</span>${confHtml(s, now)}${wd ? `<span class="note">${wd}</span>` : ''}</div>
     <span class="meta">${s.playing}/${s.max} players</span>
     <span class="meta">at ${clock(r.at)}</span>
     <a class="btn-line join" href="${joinLink(s)}">Join</a>
@@ -545,16 +723,46 @@ function rowUnknown(s) {
 }
 
 // "Where help is needed": servers with no timer first, then the least certain timers
+// ===== Confidence =====
+// Based on how long ago this server's timer was last set: a player's reading or spawn report,
+// or (for servers that started while we were watching) the moment the helper auto-timed it.
+const CONF_LEVELS = [
+  { level: 4, name: 'High', maxH: 2 },
+  { level: 3, name: 'Good', maxH: 6 },
+  { level: 2, name: 'Fair', maxH: 24 },
+  { level: 1, name: 'Low', maxH: Infinity },
+];
+function lastSetAt(s) { return s.lastSubmit || (s.startSource === 'auto' ? s.firstSeen : null); }
+function confidence(s, now) {
+  const at = lastSetAt(s);
+  if (!at) return null;
+  const hours = Math.max(0, (now - at) / 3600000);
+  return { ...CONF_LEVELS.find(c => hours < c.maxH), hours, auto: !s.lastSubmit };
+}
+function agoText(hours) {
+  const min = Math.round(hours * 60);
+  return min < 60 ? `${min}m ago` : hours < 48 ? `${Math.round(hours)}h ago` : `${Math.round(hours / 24)}d ago`;
+}
+function confHtml(s, now) {
+  const c = confidence(s, now);
+  if (!c) return '';
+  const bars = [1, 2, 3, 4].map(i => `<i${i <= c.level ? ' class="on"' : ''}></i>`).join('');
+  const what = c.auto ? 'auto-timed' : 'updated';
+  return `<span class="conf l${c.level}" title="${c.name} confidence: ${what} ${agoText(c.hours)} (assuming reports are trustworthy)"><span class="bars">${bars}</span>${c.name}<span class="ago">· ${what} ${agoText(c.hours)}</span></span>`;
+}
+
 function renderNeed(unknown, known) {
-  const shaky = known.filter(k => k.r.width >= 120).sort((a, b) => b.r.width - a.r.width);
+  const now = srvNow();
+  const shaky = known.map(k => ({ ...k, c: confidence(k.s, now) }))
+    .filter(k => k.c && k.c.level <= 2).sort((a, b) => b.c.hours - a.c.hours);
   const picks = [
     ...unknown.map(s => ({ s, label: 'no timer' })),
-    ...shaky.map(({ s, r }) => ({ s, label: plusMinus(r.width) })),
+    ...shaky.map(({ s, c }) => ({ s, label: agoText(c.hours) })),
   ].slice(0, 6);
   $('needText').textContent = unknown.length
     ? `${unknown.length} server${unknown.length === 1 ? ' has' : 's have'} no timer yet. A reading from any of these helps the most:`
     : shaky.length
-      ? 'Every server has a timer, but these are the least sure. A reading with Seraphiel\'s time left makes them exact:'
+      ? 'These timers haven\'t been updated in a while. A fresh reading with Seraphiel\'s time left makes them exact again:'
       : 'Every timer is in good shape right now. Readings and spawn reports still keep them sharp.';
   $('needChips').innerHTML = picks.map(({ s, label }) =>
     `<button type="button" class="chip" data-log="${esc(s.short)}"><span class="mono">${esc(s.short)}</span>${esc(label)}</button>`).join('');
@@ -581,7 +789,7 @@ function render() {
   const next = upcoming[0];
   if (next) {
     $('heroWhen').textContent = timer(next.r.until);
-    $('heroServer').innerHTML = `Server <span class="mono">${esc(next.s.short)}</span> · ${next.s.playing}/${next.s.max} players · ${plusMinus(next.r.width, true)}`;
+    $('heroServer').innerHTML = `Server <span class="mono">${esc(next.s.short)}</span> · ${next.s.playing}/${next.s.max} players · ${plusMinus(next.r.width, true)} ${confHtml(next.s, now)}`;
     $('heroJoin').href = joinLink(next.s); $('heroJoin').removeAttribute('aria-disabled');
     const wd = whiteDeath(next.s, now);
     $('heroWd').hidden = !wd; $('heroWd').textContent = wd;
@@ -614,8 +822,120 @@ function render() {
 
   const closed = data.servers.filter(s => s.closedAt);
   renderNeed(unknown, known);
+  renderDoa(now, open, unknown);
   $('closed').textContent = closed.length ? `Recently closed: ${closed.map(s => s.short).join(', ')}` : '';
 }
+
+// ===== Dead on Arrival (White Death) =====
+const WD_NOW = 300;   // "just rolled" for 5 minutes after a roll
+const WD_SOON = 900;  // highlight rolls within 15 minutes
+let dFilter = 'all';
+const DICON = {
+  now: '<svg class="ico" aria-hidden="true" viewBox="0 0 40 40"><path d="M7 30 L9 13 L15.5 21 L20 8 L24.5 21 L31 13 L33 30 Z" fill="#f4f1ea" stroke="#2f5874" stroke-width="2" stroke-linejoin="round"/><path d="M20.5 9 L18 18 L22 22 L19 30" fill="none" stroke="#2f5874" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  soon: '<svg class="ico" aria-hidden="true" viewBox="0 0 40 40"><path d="M7 30 L9 13 L15.5 21 L20 8 L24.5 21 L31 13 L33 30 Z" fill="#e4ecf2" stroke="#3d6a8a" stroke-width="2" stroke-linejoin="round"/></svg>',
+  later: '<svg class="ico" aria-hidden="true" viewBox="0 0 40 40"><path d="M7 30 L9 13 L15.5 21 L20 8 L24.5 21 L31 13 L33 30 Z" fill="none" stroke="#a9b8c4" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="3 3"/></svg>',
+  unknown: '<svg class="ico" aria-hidden="true" viewBox="0 0 40 40"><circle cx="20" cy="20" r="9" fill="none" stroke="#a9b8c4" stroke-width="1.8" stroke-dasharray="3 3"/></svg>',
+};
+
+// The dragon's back: a curved line of spines under the title
+(function spine() {
+  const spikes = [];
+  const N = 25;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, x = 30 + 700 * t, y = 20 + 90 * t * (1 - t);
+    const h = 10 + 26 * Math.sin(Math.PI * t), w = 7 + 5 * Math.sin(Math.PI * t);
+    spikes.push(`<path d="M${(x - w).toFixed(1)} ${y.toFixed(1)} L${(x + w * 0.35).toFixed(1)} ${(y - h).toFixed(1)} L${(x + w).toFixed(1)} ${y.toFixed(1)} Z"/>`);
+  }
+  $('spine').innerHTML = `<svg viewBox="0 -20 760 90"><path d="M30 20 Q380 65 730 20" fill="none" stroke="#9fb2c2" stroke-width="2.5" stroke-linecap="round"/><g fill="#f4f1ea" stroke="#9fb2c2" stroke-width="1.5" stroke-linejoin="round">${spikes.join('')}</g></svg>`;
+})();
+
+function wdState(srv, now) {
+  const up = uptimeOf(srv, now);
+  const done = Math.floor(up / WD_EVERY);           // rolls that have already happened
+  const since = up - done * WD_EVERY;
+  const at = (done + 1) * WD_EVERY, until = at - up;
+  const stage = done >= 1 && since <= WD_NOW ? 'now' : until <= WD_SOON ? 'soon' : 'later';
+  return { stage, until, since, at, roll: done + 1, sure: srv.startSource === 'manual' ? 'exact' : '±30s' };
+}
+function dWhen(w) { return w.stage === 'now' ? 'Rolled' : timer(w.until); }
+function dSub(w) { return w.stage === 'now' ? `${timer(w.since)} ago, check it` : `roll #${w.roll} · ${w.sure}`; }
+
+function renderDoa(now, open, unknown) {
+  $('dStatus').className = $('status').className;
+  $('dStatusText').textContent = $('statusText').textContent;
+  const list = open.filter(s => s.start).map(s => ({ s, w: wdState(s, now) }));
+  const justRolled = list.filter(k => k.w.stage === 'now').sort((a, b) => a.w.since - b.w.since);
+  const upcoming = list.slice().sort((a, b) => a.w.until - b.w.until);
+
+  const next = upcoming[0];
+  if (next) {
+    $('dWhen').textContent = timer(next.w.until);
+    $('dServer').innerHTML = `Server <span class="mono">${esc(next.s.short)}</span> · ${next.s.playing}/${next.s.max} players · roll at ${clock(next.w.at)} ${confHtml(next.s, now)}`;
+    $('dJoin').href = joinLink(next.s); $('dJoin').removeAttribute('aria-disabled');
+  } else {
+    $('dWhen').textContent = '–:––';
+    $('dServer').textContent = 'No server timers are known yet.';
+  }
+
+  const n = list.filter(k => k.w.until <= 3600).length;
+  $('dPct').textContent = n ? `${Math.round((1 - Math.pow(1 - WD_CHANCE / 100, n)) * 100)}%` : '0%';
+  $('dOddsText').textContent = n
+    ? `chance White Death appears on at least one server in the next hour. ${n} server${n === 1 ? ' rolls' : 's roll'} before then.`
+    : 'No server rolls in the next hour.';
+
+  const soon = [...justRolled, ...upcoming.filter(k => k.w.stage !== 'now' && k !== next)].slice(0, 3);
+  $('dSoon').innerHTML = soon.map(({ s, w }) => `<div class="d-item">
+      ${DICON[w.stage]}
+      <div class="info"><span class="t d-${w.stage}">${dWhen(w)}</span><span class="who"><span class="mono">${esc(s.short)}</span> · ${s.playing}/${s.max} players</span></div>
+      <a class="d-line" href="${joinLink(s)}">Join</a>
+    </div>`).join('');
+
+  const rows = (dFilter === 'hour' ? upcoming.filter(k => k.w.until <= 3600 || k.w.stage === 'now') : upcoming)
+    .sort((a, b) => (a.w.stage === 'now' ? -1 : 0) - (b.w.stage === 'now' ? -1 : 0) || a.w.until - b.w.until);
+  const unknownRows = dFilter === 'all' ? unknown.map(s => `<div class="drow">
+      ${DICON.unknown}
+      <div class="when"><span class="t d-later">?</span><span class="sub">no timer yet</span></div>
+      <div class="sid"><span class="mono">${esc(s.short)}</span><button type="button" class="linkbtn" data-log="${esc(s.short)}" data-goto="sera">Add a reading</button></div>
+      <span class="meta">${s.playing}/${s.max} players</span><span class="meta">uptime unknown</span>
+      <a class="d-line" href="${joinLink(s)}">Join</a>
+    </div>`).join('') : '';
+  $('dRows').innerHTML = rows.map(({ s, w }) => `<div class="drow ${w.stage}">
+      ${DICON[w.stage]}
+      <div class="when"><span class="t d-${w.stage}">${dWhen(w)}</span><span class="sub">${dSub(w)}</span></div>
+      <div class="sid"><span class="mono">${esc(s.short)}</span>${confHtml(s, now)}</div>
+      <span class="meta">${s.playing}/${s.max} players</span>
+      <span class="meta">${w.stage === 'now' ? `rolled at ${clock(w.at - WD_EVERY)}` : `at ${clock(w.at)}`}</span>
+      <a class="d-line" href="${joinLink(s)}">Join</a>
+    </div>`).join('') + unknownRows || `<p class="d-empty">No server rolls in the next hour.</p>`;
+
+  $('dNeed').textContent = unknown.length
+    ? `${unknown.length} server${unknown.length === 1 ? ' has' : 's have'} no timer yet.`
+    : 'Every server has a timer right now.';
+}
+
+document.querySelectorAll('.d-tabs button').forEach(b => b.addEventListener('click', () => {
+  dFilter = b.dataset.df;
+  document.querySelectorAll('.d-tabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  render();
+}));
+
+// ===== Switching between the two bosses =====
+function setView(v) {
+  const doa = v === 'doa';
+  $('viewSera').hidden = doa; $('viewDoa').hidden = !doa;
+  document.body.classList.toggle('doa', doa);
+  document.title = doa ? 'Dead on Arrival · Everveil' : 'Seraphile · Everveil';
+  document.querySelectorAll('.views a').forEach(a => {
+    if (a.dataset.view === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  });
+  render();
+}
+function goSera() {
+  if (location.hash) history.pushState(null, '', location.pathname + location.search);
+  setView('sera');
+}
+window.addEventListener('hashchange', () => setView(location.hash === '#doa' ? 'doa' : 'sera'));
+$('dAddReading').addEventListener('click', () => { goSera(); openPanel('addPanel'); });
 
 // Count this visit (a random ID kept in this browser, so repeat visits count as one person)
 (function countVisit() {
@@ -628,6 +948,7 @@ function render() {
   fetch(API + '/hit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ v }) }).catch(() => {});
 })();
 
+setView(location.hash === '#doa' ? 'doa' : 'sera');
 refresh();
 setInterval(() => { if (!document.hidden) refresh(); }, REFRESH_MS);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
